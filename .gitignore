@@ -1,0 +1,32 @@
+# Xcode
+*.xcodeproj
+*.xcworkspace
+xcuserdata/
+*.xcuserstate
+DerivedData/
+*.xcscmblueprint
+
+# Tuist
+Derived/
+/Tuist/Dependencies
+/Tuist/Package.resolved
+/Tuist/.build
+
+# Swift Package Manager
+.build/
+.swiftpm/
+Packages/
+
+# macOS
+.DS_Store
+
+# Misc
+.netrc
+*.log
+*.tmp
+*.dSYM
+.DS_Store
+.agents
+.gemini
+.claude
+Examples
