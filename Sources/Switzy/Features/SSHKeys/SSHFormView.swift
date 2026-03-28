@@ -140,9 +140,26 @@ struct SSHFormView: View {
                 .padding(.horizontal, Constants.Spacing.xxl)
                 .padding(.vertical, Constants.Spacing.md)
                 .background(
-                    selectedKeyType == keyType
-                        ? Color.green
-                        : Color.white.opacity(0.1)
+                    ZStack {
+                        if selectedKeyType == keyType {
+                            LinearGradient(
+                                colors: [Color.green, Color.green.opacity(0.8)],
+                                startPoint: .top,
+                                endPoint: .bottom
+                            )
+                        } else {
+                            Color.white.opacity(0.05)
+                        }
+                    }
+                )
+                .overlay(
+                    Capsule()
+                        .strokeBorder(
+                            selectedKeyType == keyType 
+                                ? Color.white.opacity(0.2) 
+                                : Color.white.opacity(0.1), 
+                            lineWidth: 0.5
+                        )
                 )
                 .foregroundStyle(
                     selectedKeyType == keyType ? .white : .secondary
@@ -296,7 +313,7 @@ struct SSHFormView: View {
                                 } label: {
                                     Image(systemName: Constants.SystemImage.copy)
                                         .font(.system(size: 12))
-                                        .foregroundStyle(.purple)
+                                        .foregroundStyle(.blue)
                                 }
                                 .buttonStyle(.plain)
                             }

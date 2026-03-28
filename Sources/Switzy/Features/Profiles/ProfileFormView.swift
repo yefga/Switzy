@@ -205,7 +205,10 @@ struct ProfileFormView: View {
     private var existingProfilesList: some View {
         VStack(alignment: .leading, spacing: Constants.Spacing.xxl) {
             ForEach(appModel.availableProfiles) { profile in
-                profileRow(profile: profile)
+                if !showForm || (showForm && !isCreatingNewProfile && appModel.selectedProfileID == profile.id) {
+                    profileRow(profile: profile)
+                        .transition(.move(edge: .top).combined(with: .opacity))
+                }
             }
         }
     }
@@ -228,7 +231,17 @@ struct ProfileFormView: View {
                             .font(.system(size: 8, weight: .bold))
                             .padding(.horizontal, 6)
                             .padding(.vertical, 2)
-                            .background(Color.purple.opacity(0.2))
+                            .background(
+                                LinearGradient(
+                                    colors: [Color.green, Color.green.opacity(0.7)],
+                                    startPoint: .top,
+                                    endPoint: .bottom
+                                )
+                            )
+                            .overlay(
+                                Capsule()
+                                    .strokeBorder(Color.white.opacity(0.3), lineWidth: 0.5)
+                            )
                             .clipShape(Capsule())
                     }
                 }
@@ -260,7 +273,7 @@ struct ProfileFormView: View {
                 } label: {
                     Text("Edit")
                         .font(.system(size: 11, weight: .medium))
-                        .foregroundStyle(.purple)
+                        .foregroundStyle(.blue)
                 }
                 .buttonStyle(.plain)
             } else if isSelected && showForm && !isCreatingNewProfile {
@@ -271,7 +284,7 @@ struct ProfileFormView: View {
                 } label: {
                     Text("Done")
                         .font(.system(size: 11, weight: .bold))
-                        .foregroundStyle(.purple)
+                        .foregroundStyle(.blue)
                 }
                 .buttonStyle(.plain)
             }
@@ -295,7 +308,7 @@ struct ProfileFormView: View {
         )
         .overlay(
             RoundedRectangle(cornerRadius: Constants.Layout.cornerRadiusSmall)
-                .stroke(isSelected ? Color.purple.opacity(0.3) : Color.clear, lineWidth: 1)
+                .stroke(isSelected ? Color.blue.opacity(0.3) : Color.clear, lineWidth: 1)
         )
     }
 

@@ -57,7 +57,18 @@ struct ManagementView: View {
                 let selectedIndex = tabs.firstIndex(of: appModel.selectedManagementTab) ?? 0
                 
                 RoundedRectangle(cornerRadius: Constants.Layout.cornerRadiusCapsule, style: .continuous)
-                    .fill(Color.purple)
+                    .fill(
+                        LinearGradient(
+                            colors: [Color.blue, Color.blue.opacity(0.7)],
+                            startPoint: .top,
+                            endPoint: .bottom
+                        )
+                    )
+                    .overlay(
+                        RoundedRectangle(cornerRadius: Constants.Layout.cornerRadiusCapsule, style: .continuous)
+                            .strokeBorder(Color.white.opacity(0.3), lineWidth: 0.5)
+                    )
+                    .padding(2)
                     .frame(width: pillWidth)
                     .offset(x: CGFloat(selectedIndex) * pillWidth)
             }
@@ -69,13 +80,12 @@ struct ManagementView: View {
             }
         }
         .frame(height: Constants.Layout.tabPillHeight)
-        .background(Color.white.opacity(0.08))
-        .clipShape(
-            RoundedRectangle(
-                cornerRadius: Constants.Layout.cornerRadiusCapsule,
-                style: .continuous
-            )
+        .glassBackground(
+            cornerRadius: Constants.Layout.cornerRadiusCapsule,
+            material: .hudWindow,
+            opacity: 0.25
         )
+        .shadow(color: .black.opacity(0.1), radius: 2, x: 0, y: 1)
     }
 
     @ViewBuilder
@@ -148,7 +158,7 @@ struct ManagementView: View {
         } label: {
             HStack(spacing: Constants.Spacing.lg) {
                 Circle()
-                    .fill(profile.isActive ? Color.purple : Color.gray.opacity(0.4))
+                    .fill(profile.isActive ? Color.blue : Color.gray.opacity(0.4))
                     .frame(
                         width: Constants.Layout.activeIndicatorSize,
                         height: Constants.Layout.activeIndicatorSize
