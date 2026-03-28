@@ -9,16 +9,14 @@ import SwiftUI
 
 struct ProfileFormView: View {
     @EnvironmentObject private var appModel: AppModel
+    @EnvironmentObject private var managementViewModel: ManagementViewModel
     @StateObject private var viewModel = ProfileFormViewModel()
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            formHeader
-            Divider().opacity(0.2)
-
             ScrollView {
                 VStack(alignment: .leading, spacing: Constants.Spacing.xxxxl) {
-                    if viewModel.showForm {
+                    if managementViewModel.showProfileForm {
                         profileForm
                     }
                     existingProfilesList
@@ -28,47 +26,35 @@ struct ProfileFormView: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         .onChange(of: appModel.selectedProfileID) { _ in
-            if viewModel.showForm && !viewModel.isCreatingNewProfile {
+            if managementViewModel.showProfileForm && !managementViewModel.isCreatingNewProfile {
                 viewModel.loadProfile(currentProfile: appModel.selectedProfile)
             }
         }
         .onAppear {
             if appModel.availableProfiles.isEmpty {
-                viewModel.showForm = true
-                viewModel.isCreatingNewProfile = true
+                managementViewModel.showProfileForm = true
+                managementViewModel.isCreatingNewProfile = true
             }
             viewModel.loadProfile(currentProfile: appModel.selectedProfile)
             viewModel.scanSSHKeys()
         }
-    }
-
-    // MARK: - Header
-
-    @ViewBuilder
-    private var formHeader: some View {
-        HStack {
-            Text(Constants.Label.profiles)
-                .font(.system(
-                    size: Constants.FontSize.headline,
-                    weight: .semibold
-                ))
-
-            Text("\(appModel.availableProfiles.count) profiles")
-                .font(.system(size: Constants.FontSize.caption))
-                .foregroundStyle(.tertiary)
-
-            Spacer()
-
-            Button {
-                viewModel.toggleFormState(appModel: appModel)
-            } label: {
-                Image(systemName: (viewModel.showForm && viewModel.isCreatingNewProfile) ? Constants.SystemImage.minus : Constants.SystemImage.plus)
-                    .font(.system(size: Constants.FontSize.body))
+        // Sync local view model state with global management state
+        .onChange(of: managementViewModel.isCreatingNewProfile) { isCreating in
+            viewModel.isCreatingNewProfile = isCreating
+            if isCreating {
+                viewModel.resetForm()
             }
-            .buttonStyle(.plain)
         }
-        .padding(.horizontal, Constants.Spacing.xxxxl)
-        .padding(.vertical, Constants.Spacing.xxl)
+        .onChange(of: managementViewModel.showProfileForm) { show in
+            viewModel.showForm = show
+        }
+        // And vice-versa for when save is clicked
+        .onChange(of: viewModel.showForm) { show in
+            managementViewModel.showProfileForm = show
+        }
+        .onChange(of: viewModel.isCreatingNewProfile) { isCreating in
+            managementViewModel.isCreatingNewProfile = isCreating
+        }
     }
 
     // MARK: - Form

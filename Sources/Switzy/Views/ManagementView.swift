@@ -10,46 +10,71 @@ import SwiftUI
 struct ManagementView: View {
     @EnvironmentObject private var appModel: AppModel
     @StateObject private var viewModel = ManagementViewModel()
+    @StateObject private var sshKeysViewModel = SSHKeysViewModel()
 
     var body: some View {
         VStack(spacing: 0) {
-            HStack(spacing: 0) {
-                sidebar
-                Divider()
-                contentArea
-            }
-            .background(
-                VisualEffectView(
-                    material: .underWindowBackground,
-                    blendingMode: .behindWindow,
-                    state: .active
-                )
-            )
+            contentHeader
+            Divider().opacity(0.2)
+            contentArea   
         }
+        .background(
+            VisualEffectView(
+                material: .underWindowBackground,
+                blendingMode: .behindWindow,
+                state: .active
+            )
+        )
         .frame(
             minWidth: Constants.Layout.managementWidth,
             minHeight: Constants.Layout.managementHeight
         )
-    }
-
-    // MARK: - Sidebar
-
-    @ViewBuilder
-    private var sidebar: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            tabToggle
-                .padding(Constants.Spacing.xxl)
-
-            sidebarContent
+        .onAppear {
+            sshKeysViewModel.loadKeys()
         }
-        .frame(width: Constants.Layout.sidebarWidth)
-        .background(Color.white.opacity(0.05))
+    }
+    
+    // MARK: - Content Header
+    
+    @ViewBuilder
+    private var contentHeader: some View {
+        HStack {
+            tabToggle
+            Spacer()
+            
+            Button {
+                withAnimation(.easeInOut(duration: Constants.Animation.defaultDuration)) {
+                    if appModel.selectedManagementTab == .profile {
+                        if !viewModel.showProfileForm {
+                            viewModel.showProfileForm = true
+                            viewModel.isCreatingNewProfile = true
+                        } else if viewModel.isCreatingNewProfile {
+                            viewModel.showProfileForm = false
+                            viewModel.isCreatingNewProfile = false
+                        } else {
+                            viewModel.isCreatingNewProfile = true
+                        }
+                    } else {
+                        viewModel.showNewSSHKeyForm.toggle()
+                    }
+                }
+            } label: {
+                let isMinus = appModel.selectedManagementTab == .profile 
+                    ? (viewModel.showProfileForm && viewModel.isCreatingNewProfile)
+                    : viewModel.showNewSSHKeyForm
+                
+                Image(systemName: isMinus ? Constants.SystemImage.minus : Constants.SystemImage.plus)
+                    .font(.system(size: Constants.FontSize.body))
+            }
+            .buttonStyle(.plain)
+        }
+        .padding(.horizontal, Constants.Spacing.xxxxl)
+        .padding(.vertical, Constants.Spacing.xxl)
     }
 
     @ViewBuilder
     private var tabToggle: some View {
         ZStack(alignment: .leading) {
-            // Sliding Background Pill
             GeometryReader { geo in
                 let tabs = Constants.ManagementTab.allCases
                 let pillWidth = geo.size.width / CGFloat(tabs.count)
@@ -78,7 +103,7 @@ struct ManagementView: View {
                 }
             }
         }
-        .frame(height: Constants.Layout.tabPillHeight)
+        .frame(width: 200, height: Constants.Layout.tabPillHeight)
         .glassBackground(
             cornerRadius: Constants.Layout.cornerRadiusCapsule,
             material: .hudWindow,
@@ -94,7 +119,9 @@ struct ManagementView: View {
                 viewModel.selectTab(appModel: appModel, tab: tab)
             }
         } label: {
-            Text(tab.rawValue)
+            let count = tab == .profile ? appModel.availableProfiles.count : sshKeysViewModel.keys.count
+            
+            Text("\(tab.rawValue) (\(count))")
                 .font(.system(
                     size: Constants.FontSize.caption,
                     weight: appModel.selectedManagementTab == tab ? .semibold : .regular
@@ -106,6 +133,17 @@ struct ManagementView: View {
         .foregroundStyle(
             appModel.selectedManagementTab == tab ? .white : .secondary
         )
+    }
+
+    // MARK: - Sidebar
+
+    @ViewBuilder
+    private var sidebar: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            sidebarContent
+        }
+        .frame(width: Constants.Layout.sidebarWidth)
+        .background(Color.white.opacity(0.05))
     }
 
     @ViewBuilder
@@ -195,6 +233,7 @@ struct ManagementView: View {
     @ViewBuilder
     private var sshSidebar: some View {
         SSHSidebarView()
+            .environmentObject(sshKeysViewModel)
     }
 
     // MARK: - Content Area
@@ -204,12 +243,15 @@ struct ManagementView: View {
         ZStack {
             if appModel.selectedManagementTab == .profile {
                 ProfileFormView()
+                    .environmentObject(viewModel)
                     .transition(.asymmetric(
                         insertion: .move(edge: viewModel.transitionDirection == .trailing ? .leading : .trailing).combined(with: .opacity),
                         removal: .move(edge: viewModel.transitionDirection == .trailing ? .leading : .trailing).combined(with: .opacity)
                     ))
             } else {
                 SSHFormView()
+                    .environmentObject(viewModel)
+                    .environmentObject(sshKeysViewModel)
                     .transition(.asymmetric(
                         insertion: .move(edge: viewModel.transitionDirection == .trailing ? .trailing : .leading).combined(with: .opacity),
                         removal: .move(edge: viewModel.transitionDirection == .trailing ? .trailing : .leading).combined(with: .opacity)

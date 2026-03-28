@@ -8,17 +8,15 @@
 import SwiftUI
 
 struct SSHFormView: View {
-    @StateObject private var viewModel = SSHKeysViewModel()
+    @EnvironmentObject private var managementViewModel: ManagementViewModel
+    @EnvironmentObject private var viewModel: SSHKeysViewModel
     @StateObject private var formViewModel = SSHFormViewModel()
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            formHeader
-            Divider().opacity(0.2)
-
             ScrollView {
                 VStack(alignment: .leading, spacing: Constants.Spacing.xxxl) {
-                    if formViewModel.showNewKeyForm {
+                    if managementViewModel.showNewSSHKeyForm {
                         newKeyForm
                     }
                     existingKeysList
@@ -30,37 +28,6 @@ struct SSHFormView: View {
         .onAppear {
             viewModel.loadKeys()
         }
-    }
-
-    // MARK: - Header
-
-    @ViewBuilder
-    private var formHeader: some View {
-        HStack {
-            Text(Constants.Strings.sshKeys)
-                .font(.system(
-                    size: Constants.FontSize.headline,
-                    weight: .semibold
-                ))
-
-            Text("\(viewModel.keys.count) keys")
-                .font(.system(size: Constants.FontSize.caption))
-                .foregroundStyle(.tertiary)
-
-            Spacer()
-
-            Button {
-                withAnimation(.easeInOut(duration: Constants.Animation.defaultDuration)) {
-                    formViewModel.showNewKeyForm.toggle()
-                }
-            } label: {
-                Image(systemName: formViewModel.showNewKeyForm ? Constants.SystemImage.minus : Constants.SystemImage.plus)
-                    .font(.system(size: Constants.FontSize.body))
-            }
-            .buttonStyle(.plain)
-        }
-        .padding(.horizontal, Constants.Spacing.xxxxl)
-        .padding(.vertical, Constants.Spacing.xxl)
     }
 
     // MARK: - New Key Form
@@ -180,7 +147,7 @@ struct SSHFormView: View {
     @ViewBuilder
     private var generateButton: some View {
         Button {
-            formViewModel.generateKey(viewModel: viewModel)
+            formViewModel.generateKey(viewModel: viewModel, managementViewModel: managementViewModel)
         } label: {
             Text(Constants.Strings.generateKey)
                 .font(.system(
