@@ -86,9 +86,9 @@ final class SSHKeysViewModel: ObservableObject {
         showStatus(Constants.Strings.publicKeyCopied)
     }
 
-    // MARK: - Private
-
-    private func showStatus(_ message: String) {
+    // MARK: - Toast
+    
+    func showStatus(_ message: String) {
         statusMessage = message
         statusTask?.cancel()
         statusTask = Task { [weak self] in

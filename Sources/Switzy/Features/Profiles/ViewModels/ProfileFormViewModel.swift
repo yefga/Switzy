@@ -18,8 +18,6 @@ final class ProfileFormViewModel: ObservableObject {
     @Published var isCreatingNewProfile: Bool = false
     @Published var showForm: Bool = false
     
-    private var scanTask: Task<Void, Never>?
-    
     var isFormValid: Bool {
         !profileName.trimmingCharacters(in: .whitespaces).isEmpty
             && !gitUserName.trimmingCharacters(in: .whitespaces).isEmpty
@@ -71,7 +69,7 @@ final class ProfileFormViewModel: ObservableObject {
 
     func scanSSHKeys() {
         let service = SSHKeyService()
-        scanTask = Task { [weak self] in
+        Task { [weak self] in
             if let keys = try? await service.scanKeys() {
                 // Ensure we don't update if task was cancelled
                 if !Task.isCancelled {

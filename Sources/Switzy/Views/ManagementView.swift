@@ -29,6 +29,21 @@ struct ManagementView: View {
             minWidth: Constants.Layout.managementWidth,
             minHeight: Constants.Layout.managementHeight
         )
+        .overlay(alignment: .bottom) {
+            if let message = sshKeysViewModel.statusMessage {
+                Text(message)
+                    .font(.system(size: Constants.FontSize.body, weight: .medium))
+                    .foregroundStyle(.white)
+                    .padding(.horizontal, Constants.Spacing.xxl)
+                    .padding(.vertical, Constants.Spacing.md)
+                    .background(Color.black.opacity(0.75))
+                    .clipShape(Capsule())
+                    .padding(.bottom, Constants.Spacing.xxxxl)
+                    .transition(.move(edge: .bottom).combined(with: .opacity))
+                    .zIndex(1)
+            }
+        }
+        .animation(.spring(response: 0.3, dampingFraction: 0.8), value: sshKeysViewModel.statusMessage)
         .onAppear {
             sshKeysViewModel.loadKeys()
         }
@@ -120,14 +135,19 @@ struct ManagementView: View {
             }
         } label: {
             let count = tab == .profile ? appModel.availableProfiles.count : sshKeysViewModel.keys.count
+            let icon = tab == .profile ? Constants.SystemImage.profileManage : Constants.SystemImage.sshManage
             
-            Text("\(tab.rawValue) (\(count))")
-                .font(.system(
-                    size: Constants.FontSize.caption,
-                    weight: appModel.selectedManagementTab == tab ? .semibold : .regular
-                ))
-                .frame(maxWidth: .infinity)
-                .frame(height: Constants.Layout.tabPillHeight)
+            HStack(spacing: Constants.Spacing.sm) {
+                Image(systemName: icon)
+                    .font(.system(size: Constants.FontSize.caption))
+                Text("\(tab.rawValue) (\(count))")
+                    .font(.system(
+                        size: Constants.FontSize.caption,
+                        weight: appModel.selectedManagementTab == tab ? .semibold : .regular
+                    ))
+            }
+            .frame(maxWidth: .infinity)
+            .frame(height: Constants.Layout.tabPillHeight)
         }
         .buttonStyle(.plain)
         .foregroundStyle(

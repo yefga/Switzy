@@ -9,12 +9,6 @@ import SwiftUI
 
 enum Constants {
 
-    // MARK: - Accent Dots (header decoration)
-
-    static let accentDots: [Color] = [
-        .red, .yellow, .green, .blue, .purple,
-    ]
-
     // MARK: - System Images
 
     enum SystemImage {

@@ -17,8 +17,6 @@ final class SSHFormViewModel: ObservableObject {
     @Published var statusMessage: String?
     @Published var expandedKeyIDs: Set<UUID> = []
 
-    private var generateTask: Task<Void, Never>?
-
     func generateKey(viewModel: SSHKeysViewModel, managementViewModel: ManagementViewModel) {
         let service = SSHKeyService()
         errorMessage = nil
@@ -30,7 +28,7 @@ final class SSHFormViewModel: ObservableObject {
         let name = filename
         let pass = passphrase
 
-        generateTask = Task {
+        Task {
             do {
                 _ = try await service.generateKey(
                     type: keyType,
@@ -55,7 +53,6 @@ final class SSHFormViewModel: ObservableObject {
             }
         }
     }
-
     func resetForm() {
         email = ""
         filename = ""

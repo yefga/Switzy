@@ -172,12 +172,6 @@ struct SSHKeyRowView: View {
     private func copyToClipboard(_ text: String, label: String) {
         NSPasteboard.general.clearContents()
         NSPasteboard.general.setString(text, forType: .string)
-        viewModel.statusMessage = "\(label) copied!"
-        Task { @MainActor in
-            try? await Task.sleep(nanoseconds: 2_000_000_000)
-            if !Task.isCancelled {
-                viewModel.statusMessage = nil
-            }
-        }
+        viewModel.showStatus("\(label) copied!")
     }
 }

@@ -13,7 +13,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     private var statusItem: NSStatusItem?
     private var popover: NSPopover?
-    private var eventMonitor: Any?
 
     let appModel = AppModel()
 
@@ -32,14 +31,19 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         )
 
         if let button = statusItem?.button {
-            button.image = NSImage(
-                systemSymbolName: Constants.SystemImage.info,
-                accessibilityDescription: Constants.Strings.appName
-            )
-            button.image?.size = NSSize(
-                width: Constants.Layout.statusBarIconSize,
-                height: Constants.Layout.statusBarIconSize
-            )
+            if let image = NSImage(named: "img_status_bar") {
+                image.isTemplate = true
+                button.image = image
+            } else {
+                button.image = NSImage(
+                    systemSymbolName: Constants.SystemImage.info,
+                    accessibilityDescription: Constants.Strings.appName
+                )
+                button.image?.size = NSSize(
+                    width: Constants.Layout.statusBarIconSize,
+                    height: Constants.Layout.statusBarIconSize
+                )
+            }
             button.action = #selector(togglePopover(_:))
             button.target = self
         }

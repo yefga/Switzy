@@ -12,10 +12,8 @@ final class MenuBarViewModel: ObservableObject {
     @Published var hoveredProfileID: UUID?
     @Published var hoveredActionID: String?
     
-    private var switchTask: Task<Void, Never>?
-    
     func switchProfile(appModel: AppModel, to profile: GitProfile) {
-        switchTask = Task {
+        Task {
             await appModel.switchProfile(to: profile)
         }
     }
