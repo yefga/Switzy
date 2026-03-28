@@ -21,7 +21,7 @@ Switzy is a lightweight, premium menu bar application designed for developers wh
 You can install Switzy using Homebrew by tapping the official repository:
 
 ```bash
-brew tap yefga/switzy
+brew tap yefga/tap
 brew install --cask switzy
 ```
 
@@ -29,6 +29,12 @@ brew install --cask switzy
 
 1. Download the latest `.dmg` from the [Releases](https://github.com/yefga/Switzy/releases) page.
 2. Open the DMG and drag **Switzy.app** into your **Applications** folder.
+
+## 🛡️ Note on Security (Notarization)
+
+Switzy's official releases are **Notarized by Apple**. This means the app has been verified to be free of malware, and it will run smoothly on your Mac without any security warnings.
+
+If you build Switzy from source, you may still need to perform the standard "Right-click -> Open" process for unnotarized binaries.
 
 ## Development
 
