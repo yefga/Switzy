@@ -1,0 +1,9 @@
+// Project Metadata
+PROJECT_NAME = Switzy
+PRODUCT_BUNDLE_IDENTIFIER = com.yefga.Switzy
+MARKETING_VERSION = 1.0.0
+CURRENT_PROJECT_VERSION = 1
+PROJECT_CREATOR = Yefga
+
+// Include local signing config (not tracked in git)
+#include? "Local.xcconfig"
