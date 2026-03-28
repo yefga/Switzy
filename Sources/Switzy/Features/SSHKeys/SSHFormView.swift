@@ -147,7 +147,12 @@ struct SSHFormView: View {
     @ViewBuilder
     private var generateButton: some View {
         Button {
-            formViewModel.generateKey(viewModel: viewModel, managementViewModel: managementViewModel)
+            formViewModel.generateKey {
+                viewModel.loadKeys()
+                withAnimation(.easeInOut(duration: Constants.Animation.formDuration)) {
+                    managementViewModel.showNewSSHKeyForm = false
+                }
+            }
         } label: {
             Text(Constants.Strings.generateKey)
                 .font(.system(

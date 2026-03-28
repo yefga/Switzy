@@ -169,19 +169,21 @@ struct ManagementView: View {
     @ViewBuilder
     private var sidebarContent: some View {
         ZStack {
-            if appModel.selectedManagementTab == .profile {
+            switch appModel.selectedManagementTab {
+            case .profile:
                 profileSidebar
                     .transition(.asymmetric(
                         insertion: .move(edge: viewModel.transitionDirection == .trailing ? .leading : .trailing).combined(with: .opacity),
                         removal: .move(edge: viewModel.transitionDirection == .trailing ? .leading : .trailing).combined(with: .opacity)
                     ))
-            } else {
+            case .ssh:
                 sshSidebar
                     .transition(.asymmetric(
                         insertion: .move(edge: viewModel.transitionDirection == .trailing ? .trailing : .leading).combined(with: .opacity),
                         removal: .move(edge: viewModel.transitionDirection == .trailing ? .trailing : .leading).combined(with: .opacity)
                     ))
             }
+            
         }
     }
 

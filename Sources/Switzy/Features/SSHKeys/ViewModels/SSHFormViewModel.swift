@@ -5,7 +5,8 @@
 //  Created by Yefga on 28/03/26.
 //
 
-import SwiftUI
+import Foundation
+import Combine
 
 @MainActor
 final class SSHFormViewModel: ObservableObject {
@@ -17,7 +18,7 @@ final class SSHFormViewModel: ObservableObject {
     @Published var statusMessage: String?
     @Published var expandedKeyIDs: Set<UUID> = []
 
-    func generateKey(viewModel: SSHKeysViewModel, managementViewModel: ManagementViewModel) {
+    func generateKey(onSuccess: @escaping () -> Void) {
         let service = SSHKeyService()
         errorMessage = nil
         statusMessage = nil
@@ -40,11 +41,8 @@ final class SSHFormViewModel: ObservableObject {
                 // Update UI on MainActor
                 if !Task.isCancelled {
                     statusMessage = "Key generated successfully"
-                    viewModel.loadKeys()
                     resetForm()
-                    withAnimation {
-                        managementViewModel.showNewSSHKeyForm = false
-                    }
+                    onSuccess()
                 }
             } catch {
                 if !Task.isCancelled {
