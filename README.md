@@ -30,19 +30,11 @@ brew install --cask switzy
 1. Download the latest `.dmg` from the [Releases](https://github.com/yefga/Switzy/releases) page.
 2. Open the DMG and drag **Switzy.app** into your **Applications** folder.
 
-## 🛡️ Note on Gatekeeper (macOS Security)
+## 🛡️ Note on Security (Notarization)
 
-As this is an open-source project and not yet notarized by Apple, you may see a warning: *"Apple could not verify “Switzy” is free of malware."*
+Switzy's official releases are **Notarized by Apple**. This means the app has been verified to be free of malware, and it will run smoothly on your Mac without any security warnings.
 
-To run the app:
-1. **Right-click** on **Switzy.app** in your Applications folder.
-2. Select **Open** from the menu.
-3. Click **Open** again in the dialog box.
-
-Alternatively, you can run this command in your terminal:
-```bash
-xattr -cr /Applications/Switzy.app
-```
+If you build Switzy from source, you may still need to perform the standard "Right-click -> Open" process for unnotarized binaries.
 
 ## Development
 

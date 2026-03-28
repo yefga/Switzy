@@ -46,6 +46,9 @@ let project = Project(
                     "GENERATE_INFOPLIST_FILE": "YES",
                     "SWIFT_EMIT_LOC_STRINGS": "YES",
                     "ASSETCATALOG_COMPILER_APPICON_NAME": "AppIcon",
+                    "DEVELOPMENT_TEAM": "YG25GXN392",
+                    "CODE_SIGN_STYLE": "Automatic",
+                    "CODE_SIGN_IDENTITY": "Apple Development",
                 ]
             )
         ),
