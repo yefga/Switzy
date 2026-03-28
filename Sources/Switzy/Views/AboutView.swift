@@ -13,34 +13,39 @@ struct AboutView: View {
     var body: some View {
         VStack(spacing: 0) {
             // App Icon
-            Image(systemName: "key.fill")
+            Image(systemName: Constants.SystemImage.key)
                 .resizable()
                 .aspectRatio(contentMode: .fit)
-                .frame(width: 50, height: 50)
+                .frame(width: Constants.FontSize.aboutIcon, height: Constants.FontSize.aboutIcon)
                 .foregroundStyle(.white)
-                .padding(.top, 40)
+                .padding(.top, Constants.Spacing.xxxxl * 2)
             
             // App Name
             Text(Constants.Strings.appName)
-                .font(.system(size: 28, weight: .bold))
+                .font(.system(size: Constants.FontSize.aboutTitle, weight: .bold))
                 .foregroundStyle(.white)
-                .padding(.top, 16)
+                .padding(.top, Constants.Spacing.xxxl)
             
             // Subtitle
-            Text("SSH and Git Profile Manager")
-                .font(.system(size: 14, weight: .medium))
+            Text(Constants.Strings.appSubtitle)
+                .font(.system(size: Constants.FontSize.headline, weight: .medium))
                 .foregroundStyle(.secondary)
-                .padding(.top, 8)
+                .padding(.top, Constants.Spacing.lg)
                 .fixedSize(horizontal: false, vertical: true)
             
             // Version Info
-            Text("Version 1.0.0 (Build 1)")
-                .font(.system(size: 12))
-                .foregroundStyle(.tertiary)
-                .padding(.top, 12)
+            let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "0.1.0"
+            let build = Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "1"
+            
+            Text("\(Constants.Strings.version) \(version) (Build \(build))")
+                .font(.system(size: Constants.FontSize.callout))
+                .foregroundStyle(.secondary.opacity(0.8))
+                .padding(.top, Constants.Spacing.xxl)
             
             // Copyright
-            Text("Created by Yefga © 2026")
+            let copyright = Bundle.main.infoDictionary?["NSHumanReadableCopyright"] as? String ?? "Created by Yefga © 2026"
+            
+            Text(copyright)
                 .font(.system(size: 11))
                 .foregroundStyle(.tertiary)
                 .padding(.top, 4)
@@ -68,7 +73,7 @@ struct AboutView: View {
             }
             .padding(.bottom, 40)
         }
-        .frame(width: 320)
+        .frame(width: Constants.Layout.aboutWidth)
         .background(Color(NSColor.windowBackgroundColor))
     }
 

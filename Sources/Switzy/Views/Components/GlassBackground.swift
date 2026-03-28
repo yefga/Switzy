@@ -34,8 +34,8 @@ struct GlassBackground: ViewModifier {
 
                     LinearGradient(
                         colors: [
-                            Color.white.opacity(0.15),
-                            Color.white.opacity(0.05),
+                            Color.white.opacity(Constants.Opacity.glassHighlight),
+                            Color.white.opacity(Constants.Opacity.hover),
                         ],
                         startPoint: .topLeading,
                         endPoint: .bottomTrailing
@@ -57,8 +57,8 @@ struct GlassBackground: ViewModifier {
                 .strokeBorder(
                     LinearGradient(
                         colors: [
-                            Color.white.opacity(0.3),
-                            Color.white.opacity(0.1),
+                            Color.white.opacity(Constants.Opacity.glassBorder),
+                            Color.white.opacity(Constants.Opacity.active),
                         ],
                         startPoint: .topLeading,
                         endPoint: .bottomTrailing

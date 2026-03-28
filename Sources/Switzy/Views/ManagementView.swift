@@ -15,7 +15,7 @@ struct ManagementView: View {
     var body: some View {
         VStack(spacing: 0) {
             contentHeader
-            Divider().opacity(0.2)
+            Divider().opacity(Constants.Opacity.divider)
             contentArea   
         }
         .background(
@@ -105,7 +105,7 @@ struct ManagementView: View {
                     )
                     .overlay(
                         RoundedRectangle(cornerRadius: Constants.Layout.cornerRadiusCapsule, style: .continuous)
-                            .strokeBorder(Color.white.opacity(0.3), lineWidth: 0.5)
+                            .strokeBorder(Color.white.opacity(Constants.Opacity.divider), lineWidth: 0.5)
                     )
                     .padding(2)
                     .frame(width: pillWidth)
@@ -163,7 +163,7 @@ struct ManagementView: View {
             sidebarContent
         }
         .frame(width: Constants.Layout.sidebarWidth)
-        .background(Color.white.opacity(0.05))
+        .background(Color.white.opacity(Constants.Opacity.hover))
     }
 
     @ViewBuilder
@@ -237,7 +237,7 @@ struct ManagementView: View {
             .padding(.vertical, Constants.Spacing.md)
             .background(
                 isSelected
-                    ? Color.white.opacity(0.1)
+                    ? Color.white.opacity(Constants.Opacity.active)
                     : Color.clear
             )
             .clipShape(

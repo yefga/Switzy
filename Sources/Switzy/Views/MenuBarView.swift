@@ -9,16 +9,21 @@ import SwiftUI
 
 struct MenuBarView: View {
     @EnvironmentObject private var appModel: AppModel
+    @EnvironmentObject private var updater: UpdaterService
     @StateObject private var viewModel = MenuBarViewModel()
 
     var body: some View {
         VStack(spacing: 0) {
+            if updater.isUpdateAvailable {
+                updateBanner
+                Divider().opacity(Constants.Opacity.divider)
+            }
             headerView
-            Divider().opacity(0.2)
+            Divider().opacity(Constants.Opacity.divider)
             profileListView
-            Divider().opacity(0.2)
+            Divider().opacity(Constants.Opacity.divider)
             actionButtons
-            Divider().opacity(0.2)
+            Divider().opacity(Constants.Opacity.divider)
             quitButton
         }
         .frame(width: Constants.Layout.popoverWidth)
@@ -28,6 +33,7 @@ struct MenuBarView: View {
                 blendingMode: .behindWindow,
                 state: .active
             )
+            .opacity(Constants.Opacity.backgroundBlur)
         )
         .onAppear {
             appModel.loadOnLaunch()
@@ -58,6 +64,56 @@ struct MenuBarView: View {
         }
         .padding(.horizontal, Constants.Spacing.xxxl)
         .padding(.vertical, Constants.Spacing.xxl)
+    }
+    
+    // MARK: - Update Banner
+    
+    @ViewBuilder
+    private var updateBanner: some View {
+        Button {
+            if let delegate = NSApp.delegate as? AppDelegate {
+                delegate.checkForUpdates(nil)
+            }
+        } label: {
+            HStack(spacing: Constants.Spacing.xl) {
+                ZStack {
+                    Circle()
+                        .fill(Color.blue.opacity(0.1))
+                        .frame(width: 28, height: 28)
+                    
+                    Image(systemName: Constants.SystemImage.sparkle)
+                        .font(.system(size: 14, weight: .semibold))
+                        .foregroundStyle(.blue)
+                }
+                
+                VStack(alignment: .leading, spacing: 0) {
+                    Text(Constants.Strings.updateAvailable)
+                        .font(.system(size: Constants.FontSize.callout, weight: .semibold))
+                    Text(Constants.Strings.updateNow)
+                        .font(.system(size: Constants.FontSize.caption))
+                        .foregroundStyle(.secondary)
+                }
+                
+                Spacer()
+                
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 10, weight: .bold))
+                    .foregroundStyle(.tertiary)
+            }
+            .padding(.horizontal, Constants.Spacing.xxxl)
+            .padding(.vertical, Constants.Spacing.xl)
+            .background(
+                LinearGradient(
+                    colors: [
+                        Color.blue.opacity(0.08),
+                        Color.blue.opacity(0.02)
+                    ],
+                    startPoint: .top,
+                    endPoint: .bottom
+                )
+            )
+        }
+        .buttonStyle(.plain)
     }
 
     // MARK: - Profile List
@@ -126,8 +182,8 @@ struct MenuBarView: View {
             .padding(.vertical, Constants.Spacing.lg)
             .background(
                 isActive
-                    ? Color.white.opacity(0.12)
-                    : (isHovered ? Color.white.opacity(0.05) : Color.clear)
+                    ? Color.white.opacity(Constants.Opacity.active)
+                    : (isHovered ? Color.white.opacity(Constants.Opacity.hover) : Color.clear)
             )
             .clipShape(
                 RoundedRectangle(
@@ -181,7 +237,7 @@ struct MenuBarView: View {
                 Image(systemName: icon)
                     .font(.system(size: Constants.FontSize.body))
                     .foregroundStyle(.secondary)
-                    .frame(width: 20)
+                    .frame(width: Constants.Layout.iconSize)
 
                 Text(title)
                     .font(.system(size: Constants.FontSize.body))
@@ -190,7 +246,7 @@ struct MenuBarView: View {
             }
             .padding(.horizontal, Constants.Spacing.xxxl)
             .padding(.vertical, Constants.Spacing.lg)
-            .background(isHovered ? Color.white.opacity(0.05) : Color.clear)
+            .background(isHovered ? Color.white.opacity(Constants.Opacity.hover) : Color.clear)
             .contentShape(Rectangle())
             .onHover { hovering in
                 viewModel.setHoveredAction(id: id, isHovering: hovering)
@@ -212,7 +268,7 @@ struct MenuBarView: View {
                 Image(systemName: Constants.SystemImage.quit)
                     .font(.system(size: Constants.FontSize.body))
                     .foregroundStyle(.secondary)
-                    .frame(width: 20)
+                    .frame(width: Constants.Layout.iconSize)
 
                 Text(Constants.Strings.quitSwitzy)
                     .font(.system(size: Constants.FontSize.body))
@@ -221,8 +277,8 @@ struct MenuBarView: View {
             }
             .padding(.horizontal, Constants.Spacing.xxxl)
             .padding(.vertical, Constants.Spacing.lg)
-            .padding(.bottom, 8)
-            .background(isHovered ? Color.white.opacity(0.05) : Color.clear)
+            .padding(.bottom, Constants.Spacing.lg)
+            .background(isHovered ? Color.white.opacity(Constants.Opacity.hover) : Color.clear)
             .contentShape(Rectangle())
             .onHover { hovering in
                 viewModel.setHoveredAction(id: "quit", isHovering: hovering)

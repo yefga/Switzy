@@ -7,7 +7,9 @@
 
 import Cocoa
 import SwiftUI
+#if canImport(Sparkle)
 import Sparkle
+#endif
 
 @MainActor
 final class AppDelegate: NSObject, NSApplicationDelegate {
@@ -15,7 +17,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var statusItem: NSStatusItem?
     private var popover: NSPopover?
     
+    #if canImport(Sparkle)
     private var updaterController: SPUStandardUpdaterController?
+    #endif
+    private let updaterService = UpdaterService()
 
     let appModel = AppModel()
 
@@ -26,7 +31,17 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         setupPopover()
         
         // Initialize Sparkle Updater
-        updaterController = SPUStandardUpdaterController(startingUpdater: true, updaterDelegate: nil, userDriverDelegate: nil)
+        #if canImport(Sparkle)
+        updaterController = SPUStandardUpdaterController(
+            startingUpdater: true,
+            updaterDelegate: updaterService,
+            userDriverDelegate: nil
+        )
+        
+        if let updater = updaterController?.updater {
+            updaterService.setup(with: updater)
+        }
+        #endif
     }
 
     // MARK: - Status Item
@@ -60,11 +75,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private func setupPopover() {
         let contentView = MenuBarView()
             .environmentObject(appModel)
+            .environmentObject(updaterService)
 
         let popover = NSPopover()
         popover.contentSize = NSSize(
             width: Constants.Layout.popoverWidth,
-            height: 400
+            height: Constants.Layout.popoverHeight
         )
         popover.behavior = .transient
         popover.animates = true
@@ -86,5 +102,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             )
             popover.contentViewController?.view.window?.makeKey()
         }
+    }
+
+    @objc func checkForUpdates(_ sender: Any?) {
+        #if canImport(Sparkle)
+        updaterController?.checkForUpdates(sender)
+        #endif
     }
 }

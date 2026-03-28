@@ -1,0 +1,23 @@
+<?xml version="1.0" standalone="yes"?>
+<rss xmlns:sparkle="http://www.sparkle-project.org/rss" xmlns:dc="http://purl.org/dc/elements/1.1/" version="2.0">
+    <channel>
+        <title>Switzy Changelog</title>
+        <link>https://raw.githubusercontent.com/yefga/Switzy/main/appcast.xml</link>
+        <description>Most recent changes with links to updates.</description>
+        <language>en</language>
+        <item>
+            <title>Version 0.1.0</title>
+            <sparkle:releaseNotesLink>
+                https://github.com/yefga/Switzy/releases/tag/v0.1.0
+            </sparkle:releaseNotesLink>
+            <pubDate>Sat, 28 Mar 2026 15:42:00 +0700</pubDate>
+            <enclosure 
+                url="https://github.com/yefga/Switzy/releases/download/v0.1.0/Switzy-v0.1.0.dmg" 
+                sparkle:version="1" 
+                sparkle:shortVersionString="0.1.0" 
+                sparkle:edSignature="Sur6vYbHsJJ9W1z0CTAWPgVLq6ZgBT6xdGpe46U5LFk72SRWvdZz2y44Xyr1Es2fSqG9Mvr03zU9ohTI33kWDg==" 
+                length="1887436" 
+                type="application/octet-stream" />
+        </item>
+    </channel>
+</rss>

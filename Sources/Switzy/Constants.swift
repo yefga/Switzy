@@ -28,6 +28,7 @@ enum Constants {
         static let power = "power"
         static let info = "info.circle.fill"
         static let settings = "slider.horizontal.3"
+        static let gear = "gearshape.fill"
         static let drive = "externaldrive.fill"
         static let warning = "exclamationmark.triangle.fill"
         static let checkmark = "checkmark.circle.fill"
@@ -42,6 +43,8 @@ enum Constants {
         static let settingsTab = "gearshape.fill"
         static let generateKey = "bolt.fill"
         static let calendar = "calendar"
+        static let sparkle = "sparkles"
+        static let update = "arrow.up.circle.fill"
     }
 
     // MARK: - Font Sizes
@@ -55,7 +58,8 @@ enum Constants {
         static let caption2: CGFloat = 10
         static let statusBarIcon: CGFloat = 18
         static let emptyStateIcon: CGFloat = 36
-        static let aboutIcon: CGFloat = 32
+        static let aboutIcon: CGFloat = 50
+        static let aboutTitle: CGFloat = 28
     }
 
     // MARK: - Spacing
@@ -76,6 +80,7 @@ enum Constants {
 
     enum Layout {
         static let popoverWidth: CGFloat = 280
+        static let popoverHeight: CGFloat = 400
         static let cornerRadius: CGFloat = 12
         static let cornerRadiusSmall: CGFloat = 8
         static let cornerRadiusCapsule: CGFloat = 6
@@ -87,6 +92,22 @@ enum Constants {
         static let managementHeight: CGFloat = 480
         static let sidebarWidth: CGFloat = 180
         static let tabPillHeight: CGFloat = 28
+        static let aboutWidth: CGFloat = 320
+        static let iconSize: CGFloat = 20
+        static let rowHeight: CGFloat = 36
+    }
+
+    // MARK: - Opacity
+
+    enum Opacity {
+        static let backgroundBlur: Double = 0.8
+        static let divider: Double = 0.2
+        static let hover: Double = 0.05
+        static let active: Double = 0.12
+        static let secondary: Double = 0.6
+        static let tertiary: Double = 0.4
+        static let glassHighlight: Double = 0.15
+        static let glassBorder: Double = 0.3
     }
 
     // MARK: - Strings
@@ -127,6 +148,11 @@ enum Constants {
         static let file = "File"
         static let passphrase = "Passphrase"
         static let optional = "Optional"
+        static let checkForUpdates = "Check for Updates..."
+        static let updateAvailable = "New update available!"
+        static let updateNow = "Update Now"
+        static let aboutApp = "About \(appName)"
+        static let version = "Version"
     }
 
     // MARK: - Form Placeholders
@@ -175,3 +201,4 @@ enum Constants {
         var id: String { rawValue }
     }
 }
+

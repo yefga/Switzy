@@ -33,7 +33,7 @@ let project = Project(
                 "LSUIElement": true,
                 "NSHumanReadableCopyright": "Created by $(PROJECT_CREATOR)",
                 "SUFeedURL": "https://raw.githubusercontent.com/yefga/Switzy/main/appcast.xml",
-                "SUPublicEDKey": "YOUR_PUBLIC_ED_KEY",
+                "SUPublicEDKey": "VPxm/ZBcopbZIw/fq28D6pFUh7fAAF2KTOoTN5Apy50=",
                 "SUEnableAutomaticChecks": true
             ]),
             sources: ["Sources/Switzy/**"],
