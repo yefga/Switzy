@@ -1,5 +1,5 @@
 //
-//  ContentView.swift
+//  MenuBarView.swift
 //  
 //
 //  Created by Yefga on 28/03/26.
@@ -9,9 +9,7 @@ import SwiftUI
 
 struct MenuBarView: View {
     @EnvironmentObject private var appModel: AppModel
-    
-    @State private var hoveredProfileID: UUID?
-    @State private var hoveredActionID: String?
+    @StateObject private var viewModel = MenuBarViewModel()
 
     var body: some View {
         VStack(spacing: 0) {
@@ -96,12 +94,10 @@ struct MenuBarView: View {
     @ViewBuilder
     private func popoverProfileRow(profile: GitProfile) -> some View {
         let isActive = profile.id == appModel.activeProfileID
-        let isHovered = hoveredProfileID == profile.id
+        let isHovered = viewModel.hoveredProfileID == profile.id
 
         Button {
-            switchTask = Task {
-                await appModel.switchProfile(to: profile)
-            }
+            viewModel.switchProfile(appModel: appModel, to: profile)
         } label: {
             HStack(spacing: Constants.Spacing.xl) {
                 Image(systemName: isActive
@@ -141,9 +137,7 @@ struct MenuBarView: View {
             )
             .contentShape(Rectangle())
             .onHover { hovering in
-                withAnimation(.easeInOut(duration: 0.1)) {
-                    hoveredProfileID = hovering ? profile.id : nil
-                }
+                viewModel.setHoveredProfile(id: profile.id, isHovering: hovering)
             }
         }
         .buttonStyle(.plain)
@@ -180,7 +174,7 @@ struct MenuBarView: View {
         title: String,
         action: @escaping () -> Void
     ) -> some View {
-        let isHovered = hoveredActionID == id
+        let isHovered = viewModel.hoveredActionID == id
         
         Button(action: action) {
             HStack(spacing: Constants.Spacing.xl) {
@@ -199,9 +193,7 @@ struct MenuBarView: View {
             .background(isHovered ? Color.white.opacity(0.05) : Color.clear)
             .contentShape(Rectangle())
             .onHover { hovering in
-                withAnimation(.easeInOut(duration: 0.1)) {
-                    hoveredActionID = hovering ? id : nil
-                }
+                viewModel.setHoveredAction(id: id, isHovering: hovering)
             }
         }
         .buttonStyle(.plain)
@@ -211,10 +203,10 @@ struct MenuBarView: View {
 
     @ViewBuilder
     private var quitButton: some View {
-        let isHovered = hoveredActionID == "quit"
+        let isHovered = viewModel.hoveredActionID == "quit"
         
         Button {
-            NSApplication.shared.terminate(nil)
+            viewModel.quit()
         } label: {
             HStack(spacing: Constants.Spacing.xl) {
                 Image(systemName: Constants.SystemImage.quit)
@@ -233,15 +225,9 @@ struct MenuBarView: View {
             .background(isHovered ? Color.white.opacity(0.05) : Color.clear)
             .contentShape(Rectangle())
             .onHover { hovering in
-                withAnimation(.easeInOut(duration: 0.1)) {
-                    hoveredActionID = hovering ? "quit" : nil
-                }
+                viewModel.setHoveredAction(id: "quit", isHovering: hovering)
             }
         }
         .buttonStyle(.plain)
     }
-
-    // MARK: - Task Management
-
-    @State private var switchTask: Task<Void, Never>?
 }

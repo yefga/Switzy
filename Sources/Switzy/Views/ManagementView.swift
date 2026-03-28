@@ -9,7 +9,7 @@ import SwiftUI
 
 struct ManagementView: View {
     @EnvironmentObject private var appModel: AppModel
-    @State private var transitionDirection: Edge = .trailing
+    @StateObject private var viewModel = ManagementViewModel()
 
     var body: some View {
         VStack(spacing: 0) {
@@ -31,7 +31,6 @@ struct ManagementView: View {
             minHeight: Constants.Layout.managementHeight
         )
     }
-
 
     // MARK: - Sidebar
 
@@ -91,15 +90,7 @@ struct ManagementView: View {
     @ViewBuilder
     private func tabPill(for tab: Constants.ManagementTab) -> some View {
         Button {
-            let tabs = Constants.ManagementTab.allCases
-            let currentIndex = tabs.firstIndex(of: appModel.selectedManagementTab) ?? 0
-            let targetIndex = tabs.firstIndex(of: tab) ?? 0
-            
-            transitionDirection = targetIndex > currentIndex ? .trailing : .leading
-            
-            withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
-                appModel.selectedManagementTab = tab
-            }
+            viewModel.selectTab(appModel: appModel, tab: tab)
         } label: {
             Text(tab.rawValue)
                 .font(.system(
@@ -121,14 +112,14 @@ struct ManagementView: View {
             if appModel.selectedManagementTab == .profile {
                 profileSidebar
                     .transition(.asymmetric(
-                        insertion: .move(edge: .leading).combined(with: .opacity),
-                        removal: .move(edge: .leading).combined(with: .opacity)
+                        insertion: .move(edge: viewModel.transitionDirection == .trailing ? .leading : .trailing).combined(with: .opacity),
+                        removal: .move(edge: viewModel.transitionDirection == .trailing ? .leading : .trailing).combined(with: .opacity)
                     ))
             } else {
                 sshSidebar
                     .transition(.asymmetric(
-                        insertion: .move(edge: .trailing).combined(with: .opacity),
-                        removal: .move(edge: .trailing).combined(with: .opacity)
+                        insertion: .move(edge: viewModel.transitionDirection).combined(with: .opacity),
+                        removal: .move(edge: viewModel.transitionDirection).combined(with: .opacity)
                     ))
             }
         }
@@ -212,14 +203,14 @@ struct ManagementView: View {
             if appModel.selectedManagementTab == .profile {
                 ProfileFormView()
                     .transition(.asymmetric(
-                        insertion: .move(edge: .leading).combined(with: .opacity),
-                        removal: .move(edge: .leading).combined(with: .opacity)
+                        insertion: .move(edge: viewModel.transitionDirection == .trailing ? .leading : .trailing).combined(with: .opacity),
+                        removal: .move(edge: viewModel.transitionDirection == .trailing ? .leading : .trailing).combined(with: .opacity)
                     ))
             } else {
                 SSHFormView()
                     .transition(.asymmetric(
-                        insertion: .move(edge: .trailing).combined(with: .opacity),
-                        removal: .move(edge: .trailing).combined(with: .opacity)
+                        insertion: .move(edge: viewModel.transitionDirection).combined(with: .opacity),
+                        removal: .move(edge: viewModel.transitionDirection).combined(with: .opacity)
                     ))
             }
         }

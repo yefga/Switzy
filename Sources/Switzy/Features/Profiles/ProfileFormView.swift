@@ -9,19 +9,7 @@ import SwiftUI
 
 struct ProfileFormView: View {
     @EnvironmentObject private var appModel: AppModel
-
-    @State private var profileName: String = ""
-    @State private var gitUserName: String = ""
-    @State private var gitEmail: String = ""
-    @State private var selectedSSHKey: String = ""
-    @State private var availableKeys: [String] = []
-    @State private var isCreatingNewProfile: Bool = false
-    @State private var showForm: Bool = false
-    @State private var scanTask: Task<Void, Never>?
-
-    private var currentProfile: GitProfile? {
-        appModel.selectedProfile
-    }
+    @StateObject private var viewModel = ProfileFormViewModel()
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -30,7 +18,7 @@ struct ProfileFormView: View {
 
             ScrollView {
                 VStack(alignment: .leading, spacing: Constants.Spacing.xxxxl) {
-                    if showForm {
+                    if viewModel.showForm {
                         profileForm
                     }
                     existingProfilesList
@@ -40,17 +28,17 @@ struct ProfileFormView: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         .onChange(of: appModel.selectedProfileID) { _ in
-            if showForm && !isCreatingNewProfile {
-                loadProfile()
+            if viewModel.showForm && !viewModel.isCreatingNewProfile {
+                viewModel.loadProfile(currentProfile: appModel.selectedProfile)
             }
         }
         .onAppear {
             if appModel.availableProfiles.isEmpty {
-                showForm = true
-                isCreatingNewProfile = true
+                viewModel.showForm = true
+                viewModel.isCreatingNewProfile = true
             }
-            loadProfile()
-            scanSSHKeys()
+            viewModel.loadProfile(currentProfile: appModel.selectedProfile)
+            viewModel.scanSSHKeys()
         }
     }
 
@@ -72,21 +60,9 @@ struct ProfileFormView: View {
             Spacer()
 
             Button {
-                withAnimation(.easeInOut(duration: Constants.Animation.defaultDuration)) {
-                    if !showForm {
-                        showForm = true
-                        isCreatingNewProfile = true
-                        resetForm()
-                    } else if isCreatingNewProfile {
-                        showForm = false
-                        isCreatingNewProfile = false
-                    } else {
-                        isCreatingNewProfile = true
-                        resetForm()
-                    }
-                }
+                viewModel.toggleFormState(appModel: appModel)
             } label: {
-                Image(systemName: (showForm && isCreatingNewProfile) ? Constants.SystemImage.minus : Constants.SystemImage.plus)
+                Image(systemName: (viewModel.showForm && viewModel.isCreatingNewProfile) ? Constants.SystemImage.minus : Constants.SystemImage.plus)
                     .font(.system(size: Constants.FontSize.body))
             }
             .buttonStyle(.plain)
@@ -124,17 +100,17 @@ struct ProfileFormView: View {
 
             formField(
                 label: Constants.Placeholder.profileName,
-                text: $profileName
+                text: $viewModel.profileName
             )
 
             formField(
                 label: Constants.Placeholder.gitUserName,
-                text: $gitUserName
+                text: $viewModel.gitUserName
             )
 
             formField(
                 label: Constants.Placeholder.gitEmail,
-                text: $gitEmail
+                text: $viewModel.gitEmail
             )
         }
     }
@@ -150,15 +126,15 @@ struct ProfileFormView: View {
                 .foregroundStyle(.secondary)
 
             HStack {
-                if availableKeys.isEmpty {
+                if viewModel.availableKeys.isEmpty {
                     Text(Constants.Strings.selectYourKey)
                         .font(.system(size: Constants.FontSize.body))
                         .foregroundStyle(.tertiary)
                 } else {
-                    Picker("", selection: $selectedSSHKey) {
+                    Picker("", selection: $viewModel.selectedSSHKey) {
                         Text(Constants.Strings.selectYourKey).tag("")
-                        ForEach(availableKeys, id: \.self) { key in
-                            Text(keyDisplayName(key)).tag(key)
+                        ForEach(viewModel.availableKeys, id: \.self) { key in
+                            Text((key as NSString).lastPathComponent).tag(key)
                         }
                     }
                     .labelsHidden()
@@ -185,9 +161,9 @@ struct ProfileFormView: View {
     @ViewBuilder
     private var saveButton: some View {
         Button {
-            saveProfile()
+            viewModel.saveProfile(appModel: appModel, currentProfile: appModel.selectedProfile)
         } label: {
-            Text(isCreatingNewProfile ? "Create Profile" : Constants.Strings.saveChanges)
+            Text(viewModel.isCreatingNewProfile ? "Create Profile" : Constants.Strings.saveChanges)
                 .font(.system(
                     size: Constants.FontSize.body,
                     weight: .semibold
@@ -195,7 +171,7 @@ struct ProfileFormView: View {
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, Constants.Spacing.lg)
         }
-        .disabled(!isFormValid)
+        .disabled(!viewModel.isFormValid)
         .buttonStyle(.borderedProminent)
     }
 
@@ -205,174 +181,15 @@ struct ProfileFormView: View {
     private var existingProfilesList: some View {
         VStack(alignment: .leading, spacing: Constants.Spacing.xxl) {
             ForEach(appModel.availableProfiles) { profile in
-                if !showForm || (showForm && !isCreatingNewProfile && appModel.selectedProfileID == profile.id) {
-                    profileRow(profile: profile)
-                        .transition(.move(edge: .top).combined(with: .opacity))
+                if !viewModel.showForm || (viewModel.showForm && !viewModel.isCreatingNewProfile && appModel.selectedProfileID == profile.id) {
+                    ProfileRowView(
+                        viewModel: viewModel,
+                        profile: profile,
+                        isSelected: appModel.selectedProfileID == profile.id
+                    )
+                    .transition(.move(edge: .top).combined(with: .opacity))
                 }
             }
         }
-    }
-
-    @ViewBuilder
-    private func profileRow(profile: GitProfile) -> some View {
-        let isSelected = appModel.selectedProfileID == profile.id
-        
-        HStack {
-            VStack(alignment: .leading, spacing: Constants.Spacing.sm) {
-                HStack(spacing: Constants.Spacing.lg) {
-                    Text(profile.name)
-                        .font(.system(
-                            size: Constants.FontSize.body,
-                            weight: .semibold
-                        ))
-                    
-                    if profile.isActive {
-                        Text("ACTIVE")
-                            .font(.system(size: 8, weight: .bold))
-                            .padding(.horizontal, 6)
-                            .padding(.vertical, 2)
-                            .background(
-                                LinearGradient(
-                                    colors: [Color.green, Color.green.opacity(0.7)],
-                                    startPoint: .top,
-                                    endPoint: .bottom
-                                )
-                            )
-                            .overlay(
-                                Capsule()
-                                    .strokeBorder(Color.white.opacity(0.3), lineWidth: 0.5)
-                            )
-                            .clipShape(Capsule())
-                    }
-                }
-                
-                Text("\(profile.userName) · \(profile.userEmail)")
-                    .font(.system(size: Constants.FontSize.caption))
-                    .foregroundStyle(.secondary)
-                
-                if let ssh = profile.sshKeyPath {
-                    HStack(spacing: 4) {
-                        Image(systemName: "key.fill")
-                            .font(.system(size: 10))
-                        Text((ssh as NSString).lastPathComponent)
-                            .font(.system(size: 10, design: .monospaced))
-                    }
-                    .foregroundStyle(.tertiary)
-                }
-            }
-            Spacer()
-
-            if !showForm || !isSelected {
-                Button {
-                    appModel.selectedProfileID = profile.id
-                    withAnimation {
-                        showForm = true
-                        isCreatingNewProfile = false
-                        loadProfile()
-                    }
-                } label: {
-                    Text("Edit")
-                        .font(.system(size: 11, weight: .medium))
-                        .foregroundStyle(.blue)
-                }
-                .buttonStyle(.plain)
-            } else if isSelected && showForm && !isCreatingNewProfile {
-                Button {
-                    withAnimation(.easeInOut(duration: Constants.Animation.defaultDuration)) {
-                        showForm = false
-                    }
-                } label: {
-                    Text("Done")
-                        .font(.system(size: 11, weight: .bold))
-                        .foregroundStyle(.blue)
-                }
-                .buttonStyle(.plain)
-            }
-
-            Button {
-
-                appModel.deleteProfile(id: profile.id)
-            } label: {
-                Image(systemName: "trash")
-                    .font(.system(size: 11))
-                    .foregroundStyle(.red.opacity(0.6))
-            }
-            .buttonStyle(.plain)
-            .padding(.leading, 12)
-        }
-        .padding(Constants.Spacing.xxl)
-        .glassBackground(
-            cornerRadius: Constants.Layout.cornerRadiusSmall,
-            material: .hudWindow,
-            opacity: 0.4
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: Constants.Layout.cornerRadiusSmall)
-                .stroke(isSelected ? Color.blue.opacity(0.3) : Color.clear, lineWidth: 1)
-        )
-    }
-
-    // MARK: - Logic
-
-    private func loadProfile() {
-        guard let profile = currentProfile else { return }
-        profileName = profile.name
-        gitUserName = profile.userName
-        gitEmail = profile.userEmail
-        selectedSSHKey = profile.sshKeyPath ?? ""
-    }
-
-    private func resetForm() {
-        profileName = ""
-        gitUserName = ""
-        gitEmail = ""
-        selectedSSHKey = ""
-    }
-
-    private func saveProfile() {
-        if isCreatingNewProfile {
-            let newProfile = GitProfile(
-                name: profileName,
-                userName: gitUserName,
-                userEmail: gitEmail,
-                sshKeyPath: selectedSSHKey.isEmpty ? nil : selectedSSHKey
-            )
-            appModel.addOrUpdateProfile(newProfile)
-            appModel.selectedProfileID = newProfile.id
-            withAnimation {
-                isCreatingNewProfile = false
-                showForm = false
-            }
-        } else {
-            guard let existing = currentProfile else { return }
-            var updated = existing
-            updated.name = profileName
-            updated.userName = gitUserName
-            updated.userEmail = gitEmail
-            updated.sshKeyPath = selectedSSHKey.isEmpty ? nil : selectedSSHKey
-            appModel.addOrUpdateProfile(updated)
-            withAnimation {
-                showForm = false
-            }
-        }
-    }
-
-    private func scanSSHKeys() {
-        let service = SSHKeyService()
-        scanTask = Task {
-            if let keys = try? await service.scanKeys() {
-                availableKeys = keys.map(\.privateKeyPath)
-            }
-        }
-    }
-
-    private func keyDisplayName(_ path: String) -> String {
-        (path as NSString).lastPathComponent
-    }
-
-    private var isFormValid: Bool {
-        !profileName.trimmingCharacters(in: .whitespaces).isEmpty
-            && !gitUserName.trimmingCharacters(in: .whitespaces).isEmpty
-            && !gitEmail.trimmingCharacters(in: .whitespaces).isEmpty
     }
 }

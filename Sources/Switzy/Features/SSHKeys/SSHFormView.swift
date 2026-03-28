@@ -8,17 +8,8 @@
 import SwiftUI
 
 struct SSHFormView: View {
-    @State private var selectedKeyType: SSHKeyType = .ed25519
-    @State private var email: String = ""
-    @State private var filename: String = ""
-    @State private var passphrase: String = ""
-    @State private var showNewKeyForm: Bool = false
-    @State private var generateTask: Task<Void, Never>?
-    @State private var errorMessage: String?
-    @State private var statusMessage: String?
-    @State private var expandedKeyIDs: Set<UUID> = []
-
     @StateObject private var viewModel = SSHKeysViewModel()
+    @StateObject private var formViewModel = SSHFormViewModel()
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -27,7 +18,7 @@ struct SSHFormView: View {
 
             ScrollView {
                 VStack(alignment: .leading, spacing: Constants.Spacing.xxxl) {
-                    if showNewKeyForm {
+                    if formViewModel.showNewKeyForm {
                         newKeyForm
                     }
                     existingKeysList
@@ -60,10 +51,10 @@ struct SSHFormView: View {
 
             Button {
                 withAnimation(.easeInOut(duration: Constants.Animation.defaultDuration)) {
-                    showNewKeyForm.toggle()
+                    formViewModel.showNewKeyForm.toggle()
                 }
             } label: {
-                Image(systemName: showNewKeyForm ? Constants.SystemImage.minus : Constants.SystemImage.plus)
+                Image(systemName: formViewModel.showNewKeyForm ? Constants.SystemImage.minus : Constants.SystemImage.plus)
                     .font(.system(size: Constants.FontSize.body))
             }
             .buttonStyle(.plain)
@@ -81,19 +72,19 @@ struct SSHFormView: View {
 
             formField(
                 label: Constants.Strings.email,
-                text: $email,
+                text: $formViewModel.email,
                 placeholder: Constants.Placeholder.email
             )
 
             formField(
                 label: Constants.Strings.file,
-                text: $filename,
+                text: $formViewModel.filename,
                 placeholder: Constants.Placeholder.filename
             )
 
             formField(
                 label: Constants.Strings.passphrase,
-                text: $passphrase,
+                text: $formViewModel.passphrase,
                 placeholder: Constants.Placeholder.passphrase
             )
 
@@ -130,7 +121,7 @@ struct SSHFormView: View {
     @ViewBuilder
     private func keyTypePill(_ keyType: SSHKeyType) -> some View {
         Button {
-            selectedKeyType = keyType
+            formViewModel.selectedKeyType = keyType
         } label: {
             Text(keyType.displayName)
                 .font(.system(
@@ -141,7 +132,7 @@ struct SSHFormView: View {
                 .padding(.vertical, Constants.Spacing.md)
                 .background(
                     ZStack {
-                        if selectedKeyType == keyType {
+                        if formViewModel.selectedKeyType == keyType {
                             LinearGradient(
                                 colors: [Color.green, Color.green.opacity(0.8)],
                                 startPoint: .top,
@@ -155,14 +146,14 @@ struct SSHFormView: View {
                 .overlay(
                     Capsule()
                         .strokeBorder(
-                            selectedKeyType == keyType 
+                            formViewModel.selectedKeyType == keyType 
                                 ? Color.white.opacity(0.2) 
                                 : Color.white.opacity(0.1), 
                             lineWidth: 0.5
                         )
                 )
                 .foregroundStyle(
-                    selectedKeyType == keyType ? .white : .secondary
+                    formViewModel.selectedKeyType == keyType ? .white : .secondary
                 )
                 .clipShape(Capsule())
         }
@@ -189,7 +180,7 @@ struct SSHFormView: View {
     @ViewBuilder
     private var generateButton: some View {
         Button {
-            generateKey()
+            formViewModel.generateKey(viewModel: viewModel)
         } label: {
             Text(Constants.Strings.generateKey)
                 .font(.system(
@@ -200,18 +191,18 @@ struct SSHFormView: View {
                 .padding(.vertical, Constants.Spacing.lg)
         }
         .buttonStyle(.borderedProminent)
-        .disabled(email.isEmpty || filename.isEmpty)
+        .disabled(formViewModel.email.isEmpty || formViewModel.filename.isEmpty)
     }
 
     @ViewBuilder
     private var statusMessages: some View {
-        if let error = errorMessage {
+        if let error = formViewModel.errorMessage {
             Text(error)
                 .font(.system(size: Constants.FontSize.caption))
                 .foregroundStyle(.red)
         }
 
-        if let status = statusMessage {
+        if let status = formViewModel.statusMessage ?? viewModel.statusMessage {
             Text(status)
                 .font(.system(size: Constants.FontSize.caption))
                 .foregroundStyle(.green)
@@ -224,200 +215,8 @@ struct SSHFormView: View {
     private var existingKeysList: some View {
         VStack(alignment: .leading, spacing: Constants.Spacing.xxl) {
             ForEach(viewModel.keys) { key in
-                existingKeyRow(key: key)
+                SSHKeyRowView(key: key, viewModel: viewModel, expandedKeyIDs: $formViewModel.expandedKeyIDs)
             }
-        }
-    }
-
-    @ViewBuilder
-    private func existingKeyRow(key: SSHKeyInfo) -> some View {
-        let isExpanded = expandedKeyIDs.contains(key.id)
-        
-        VStack(spacing: 0) {
-            HStack {
-                VStack(alignment: .leading, spacing: Constants.Spacing.sm) {
-                    HStack(spacing: Constants.Spacing.lg) {
-                        Text(key.filename)
-                            .font(.system(
-                                size: Constants.FontSize.body,
-                                weight: .semibold
-                            ))
-
-                        Text(key.keyType.displayName)
-                            .font(.system(size: Constants.FontSize.caption2))
-                            .padding(.horizontal, Constants.Spacing.md)
-                            .padding(.vertical, Constants.Spacing.xs)
-                            .background(Color.green.opacity(0.2))
-                            .foregroundStyle(.green)
-                            .clipShape(Capsule())
-                    }
-
-                    if let comment = key.comment {
-                        Text(comment)
-                            .font(.system(size: Constants.FontSize.caption))
-                            .foregroundStyle(.secondary)
-                    }
-                }
-
-                Spacer()
-                
-                Button {
-                    withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
-                        if isExpanded {
-                            expandedKeyIDs.remove(key.id)
-                        } else {
-                            expandedKeyIDs.insert(key.id)
-                        }
-                    }
-                } label: {
-                    Image(systemName: "chevron.right")
-                        .rotationEffect(.degrees(isExpanded ? 90 : 0))
-                        .foregroundStyle(.secondary)
-                        .padding(Constants.Spacing.sm)
-                }
-                .buttonStyle(.plain)
-            }
-            .padding(Constants.Spacing.xxl)
-            .contentShape(Rectangle())
-            .onTapGesture {
-                withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
-                    if isExpanded {
-                        expandedKeyIDs.remove(key.id)
-                    } else {
-                        expandedKeyIDs.insert(key.id)
-                    }
-                }
-            }
-            
-            if isExpanded {
-                Divider().opacity(0.1)
-                
-                VStack(alignment: .leading, spacing: Constants.Spacing.xl) {
-                    if let fingerprint = key.fingerprint {
-                        VStack(alignment: .leading, spacing: Constants.Spacing.sm) {
-                            Text("FINGERPRINT")
-                                .font(.system(size: 9, weight: .bold))
-                                .foregroundStyle(.tertiary)
-                            
-                            HStack {
-                                Text(fingerprint)
-                                    .font(.system(size: 11, design: .monospaced))
-                                    .foregroundStyle(.secondary)
-                                    .lineLimit(2)
-                                    .fixedSize(horizontal: false, vertical: true)
-                                
-                                Spacer()
-                                
-                                Button {
-                                    copyToClipboard(fingerprint, label: "Fingerprint")
-                                } label: {
-                                    Image(systemName: Constants.SystemImage.copy)
-                                        .font(.system(size: 12))
-                                        .foregroundStyle(.blue)
-                                }
-                                .buttonStyle(.plain)
-                            }
-                            .padding(Constants.Spacing.lg)
-                            .background(Color.white.opacity(0.05))
-                            .clipShape(RoundedRectangle(cornerRadius: 6))
-                        }
-                    }
-                    
-                    HStack(spacing: Constants.Spacing.xxxl) {
-                        dateInfo(label: "CREATED", date: key.createdAt)
-                        dateInfo(label: "EXPIRES", date: key.expiresAt)
-                        
-                        Spacer()
-                        
-                        HStack(spacing: Constants.Spacing.lg) {
-                            Button {
-                                viewModel.copyPublicKey(key)
-                            } label: {
-                                Label("Public Key", systemImage: Constants.SystemImage.copy)
-                                    .font(.system(size: 11, weight: .medium))
-                            }
-                            .buttonStyle(.bordered)
-                            
-                            Button {
-                                viewModel.confirmDelete(key: key)
-                            } label: {
-                                Image(systemName: "trash.fill")
-                                    .foregroundStyle(.red.opacity(0.8))
-                            }
-                            .buttonStyle(.plain)
-                            .padding(Constants.Spacing.md)
-                            .background(Color.red.opacity(0.1))
-                            .clipShape(RoundedRectangle(cornerRadius: 6))
-                        }
-                    }
-                }
-                .padding(Constants.Spacing.xxl)
-                .transition(.move(edge: .top).combined(with: .opacity))
-            }
-        }
-        .glassBackground(
-            cornerRadius: Constants.Layout.cornerRadiusSmall,
-            material: .hudWindow,
-            opacity: 0.4
-        )
-    }
-    
-    @ViewBuilder
-    private func dateInfo(label: String, date: Date?) -> some View {
-        VStack(alignment: .leading, spacing: Constants.Spacing.xs) {
-            Text(label)
-                .font(.system(size: 9, weight: .bold))
-                .foregroundStyle(.tertiary)
-            
-            if let date = date {
-                Text(date, style: .date)
-                    .font(.system(size: 11))
-                    .foregroundStyle(.secondary)
-            } else {
-                Text("N/A")
-                    .font(.system(size: 11))
-                    .foregroundStyle(.tertiary)
-            }
-        }
-    }
-
-    // MARK: - Logic
-
-    private func generateKey() {
-        let service = SSHKeyService()
-        errorMessage = nil
-        statusMessage = nil
-
-        generateTask = Task {
-            do {
-                _ = try await service.generateKey(
-                    type: selectedKeyType,
-                    email: email,
-                    filename: filename,
-                    passphrase: passphrase
-                )
-                statusMessage = "Key generated successfully"
-                viewModel.loadKeys()
-                resetForm()
-            } catch {
-                errorMessage = error.localizedDescription
-            }
-        }
-    }
-
-    private func resetForm() {
-        email = ""
-        filename = ""
-        passphrase = ""
-    }
-    
-    private func copyToClipboard(_ text: String, label: String) {
-        NSPasteboard.general.clearContents()
-        NSPasteboard.general.setString(text, forType: .string)
-        statusMessage = "\(label) copied!"
-        Task {
-            try? await Task.sleep(nanoseconds: 2_000_000_000)
-            statusMessage = nil
         }
     }
 }
