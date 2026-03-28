@@ -4,7 +4,7 @@
 
 Switzy is a lightweight, premium menu bar application designed for developers who juggle multiple Git identities. It simplifies the process of switching between different Git profiles (name, email, and SSH keys) with a single click, ensuring you always commit with the right credentials.
 
-![Switzy Menu Bar](https://raw.githubusercontent.com/yefga/Switzy/main/Resources/AppIcon.png)
+![Switzy Menu Bar](demo.png)
 
 ## Core Features
 
