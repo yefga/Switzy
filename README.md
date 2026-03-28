@@ -21,7 +21,7 @@ Switzy is a lightweight, premium menu bar application designed for developers wh
 You can install Switzy using Homebrew by tapping the official repository:
 
 ```bash
-brew tap yefga/switzy
+brew tap yefga/tap
 brew install --cask switzy
 ```
 
