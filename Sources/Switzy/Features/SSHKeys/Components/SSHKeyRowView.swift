@@ -113,7 +113,13 @@ struct SSHKeyRowView: View {
                         
                         HStack(spacing: Constants.Spacing.lg) {
                             Button {
-                                viewModel.copyPublicKey(key)
+                                viewModel.copyPublicKey(key) {
+                                    NSPasteboard.general.clearContents()
+                                    NSPasteboard.general.setString(
+                                        $0.trimmingCharacters(in: .whitespacesAndNewlines),
+                                        forType: .string
+                                    )
+                                }
                             } label: {
                                 Label("Public Key", systemImage: Constants.SystemImage.copy)
                                     .font(.system(size: 11, weight: .medium))

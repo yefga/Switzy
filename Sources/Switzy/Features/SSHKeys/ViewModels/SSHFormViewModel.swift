@@ -5,7 +5,8 @@
 //  Created by Yefga on 28/03/26.
 //
 
-import SwiftUI
+import Foundation
+import Combine
 
 @MainActor
 final class SSHFormViewModel: ObservableObject {

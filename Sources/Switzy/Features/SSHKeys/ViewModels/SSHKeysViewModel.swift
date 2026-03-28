@@ -6,7 +6,7 @@
 //
 
 import SwiftUI
-import Cocoa
+import Combine
 
 @MainActor
 final class SSHKeysViewModel: ObservableObject {
@@ -74,7 +74,7 @@ final class SSHKeysViewModel: ObservableObject {
 
     // MARK: - Clipboard
 
-    func copyPublicKey(_ key: SSHKeyInfo) {
+    func copyPublicKey(_ key: SSHKeyInfo, completion: @escaping (String) -> Void) {
         guard
             let pubPath = key.publicKeyPath,
             let content = try? String(contentsOfFile: pubPath, encoding: .utf8)
@@ -82,23 +82,8 @@ final class SSHKeysViewModel: ObservableObject {
             errorMessage = Constants.Strings.noPublicKey
             return
         }
-        NSPasteboard.general.clearContents()
-        NSPasteboard.general.setString(
-            content.trimmingCharacters(in: .whitespacesAndNewlines),
-            forType: .string
-        )
+        completion(content)
         showStatus(Constants.Strings.publicKeyCopied)
-    }
-
-    // MARK: - Open in Finder
-
-    func openSSHFolder() {
-        let sshPath = FileManager.default.homeDirectoryForCurrentUser
-            .appendingPathComponent(".ssh")
-        NSWorkspace.shared.selectFile(
-            nil,
-            inFileViewerRootedAtPath: sshPath.path
-        )
     }
 
     // MARK: - Private

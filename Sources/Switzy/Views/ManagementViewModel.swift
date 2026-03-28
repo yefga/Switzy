@@ -5,11 +5,17 @@
 //  Created by Yefga on 28/03/26.
 //
 
-import SwiftUI
+import Foundation
+import Combine
+
+enum TransitionDirection {
+    case leading
+    case trailing
+}
 
 @MainActor
 final class ManagementViewModel: ObservableObject {
-    @Published var transitionDirection: Edge = .trailing
+    @Published var transitionDirection: TransitionDirection = .trailing
     
     func selectTab(appModel: AppModel, tab: Constants.ManagementTab) {
         let tabs = Constants.ManagementTab.allCases
@@ -18,8 +24,8 @@ final class ManagementViewModel: ObservableObject {
         
         transitionDirection = targetIndex > currentIndex ? .trailing : .leading
         
-        withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
-            appModel.selectedManagementTab = tab
-        }
+        // We defer the actual animation to the view layer when the state changes.
+        // The AppModel state is updated here.
+        appModel.selectedManagementTab = tab
     }
 }

@@ -90,7 +90,9 @@ struct ManagementView: View {
     @ViewBuilder
     private func tabPill(for tab: Constants.ManagementTab) -> some View {
         Button {
-            viewModel.selectTab(appModel: appModel, tab: tab)
+            withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                viewModel.selectTab(appModel: appModel, tab: tab)
+            }
         } label: {
             Text(tab.rawValue)
                 .font(.system(
@@ -118,8 +120,8 @@ struct ManagementView: View {
             } else {
                 sshSidebar
                     .transition(.asymmetric(
-                        insertion: .move(edge: viewModel.transitionDirection).combined(with: .opacity),
-                        removal: .move(edge: viewModel.transitionDirection).combined(with: .opacity)
+                        insertion: .move(edge: viewModel.transitionDirection == .trailing ? .trailing : .leading).combined(with: .opacity),
+                        removal: .move(edge: viewModel.transitionDirection == .trailing ? .trailing : .leading).combined(with: .opacity)
                     ))
             }
         }
@@ -209,8 +211,8 @@ struct ManagementView: View {
             } else {
                 SSHFormView()
                     .transition(.asymmetric(
-                        insertion: .move(edge: viewModel.transitionDirection).combined(with: .opacity),
-                        removal: .move(edge: viewModel.transitionDirection).combined(with: .opacity)
+                        insertion: .move(edge: viewModel.transitionDirection == .trailing ? .trailing : .leading).combined(with: .opacity),
+                        removal: .move(edge: viewModel.transitionDirection == .trailing ? .trailing : .leading).combined(with: .opacity)
                     ))
             }
         }
