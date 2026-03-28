@@ -1,6 +1,6 @@
 cask "switzy" do
   version "0.1.0"
-  sha256 :no_check # Replace with actual sha256 of the dmg
+  sha256 "3d4285f664162e0ea623ea60dcf0df2c81d2299ec39e95745be2053095ec315c"
 
   url "https://github.com/yefga/Switzy/releases/download/v#{version}/Switzy-v#{version}.dmg"
   name "Switzy"
