@@ -38,6 +38,14 @@ struct ProfileFormView: View {
             viewModel.loadProfile(currentProfile: appModel.selectedProfile)
             viewModel.scanSSHKeys()
         }
+        .onExitCommand {
+            if managementViewModel.showProfileForm {
+                withAnimation(.easeInOut(duration: Constants.Animation.defaultDuration)) {
+                    managementViewModel.showProfileForm = false
+                    managementViewModel.isCreatingNewProfile = false
+                }
+            }
+        }
         // Sync local view model state with global management state
         .onChange(of: managementViewModel.isCreatingNewProfile) { isCreating in
             viewModel.isCreatingNewProfile = isCreating

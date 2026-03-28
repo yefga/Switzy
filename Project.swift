@@ -9,6 +9,9 @@ let project = Project(
         disableBundleAccessors: true,
         disableSynthesizedResourceAccessors: true
     ),
+    packages: [
+        .remote(url: "https://github.com/sparkle-project/Sparkle", requirement: .upToNextMajor(from: "2.6.0"))
+    ],
     settings: .settings(
         configurations: [
             .debug(name: "Debug", xcconfig: "Configs/Project.xcconfig"),
@@ -29,9 +32,15 @@ let project = Project(
                 "CFBundleVersion": "$(CURRENT_PROJECT_VERSION)",
                 "LSUIElement": true,
                 "NSHumanReadableCopyright": "Created by $(PROJECT_CREATOR)",
+                "SUFeedURL": "https://raw.githubusercontent.com/yefga/Switzy/main/appcast.xml",
+                "SUPublicEDKey": "YOUR_PUBLIC_ED_KEY",
+                "SUEnableAutomaticChecks": true
             ]),
             sources: ["Sources/Switzy/**"],
             resources: ["Resources/**"],
+            dependencies: [
+                .package(product: "Sparkle")
+            ],
             settings: .settings(
                 base: [
                     "GENERATE_INFOPLIST_FILE": "YES",

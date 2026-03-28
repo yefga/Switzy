@@ -28,6 +28,13 @@ struct SSHFormView: View {
         .onAppear {
             viewModel.loadKeys()
         }
+        .onExitCommand {
+            if managementViewModel.showNewSSHKeyForm {
+                withAnimation(.easeInOut(duration: Constants.Animation.defaultDuration)) {
+                    managementViewModel.showNewSSHKeyForm = false
+                }
+            }
+        }
     }
 
     // MARK: - New Key Form

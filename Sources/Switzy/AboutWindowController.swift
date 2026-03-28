@@ -48,8 +48,10 @@ final class AboutWindowController {
         newWindow.standardWindowButton(.zoomButton)?.isHidden = true
         
         self.window = newWindow
-        newWindow.center()
-        newWindow.makeKeyAndOrderFront(nil)
-        NSApp.activate(ignoringOtherApps: true)
+        DispatchQueue.main.async {
+            newWindow.center()
+            newWindow.makeKeyAndOrderFront(nil)
+            NSApp.activate(ignoringOtherApps: true)
+        }
     }
 }

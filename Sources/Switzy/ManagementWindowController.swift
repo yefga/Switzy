@@ -71,8 +71,12 @@ final class ManagementWindowController {
         newWindow.backgroundColor = .black.withAlphaComponent(0.8)
 
         self.window = newWindow
-        centerWindowOnScreen(newWindow)
-        newWindow.makeKeyAndOrderFront(nil)
-        NSApp.activate(ignoringOtherApps: true)
+        DispatchQueue.main.async { [weak self] in
+            if let self = self {
+                self.centerWindowOnScreen(newWindow)
+            }
+            newWindow.makeKeyAndOrderFront(nil)
+            NSApp.activate(ignoringOtherApps: true)
+        }
     }
 }
