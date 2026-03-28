@@ -6,17 +6,31 @@
         <description>Most recent changes with links to updates.</description>
         <language>en</language>
         <item>
+            <title>Version 1.0.0</title>
+            <sparkle:releaseNotesLink>
+                https://github.com/yefga/Switzy/releases/tag/v1.0.0
+            </sparkle:releaseNotesLink>
+            <pubDate>Sat, 28 Mar 2026 18:00:00 +0700</pubDate>
+            <enclosure
+                url="https://github.com/yefga/Switzy/releases/download/v1.0.0/Switzy-v1.0.0.dmg"
+                sparkle:version="1"
+                sparkle:shortVersionString="1.0.0"
+                sparkle:edSignature="Uo3KB253SWANDV3Db2sgS9FKx8zKMbD1OzFoEAPUnIFI7FVtxx7vAxmC0gJsYIasvUqlcep+dqVG4N6ZhFsrDA=="
+                length="1800194"
+                type="application/octet-stream" />
+        </item>
+        <item>
             <title>Version 0.1.0</title>
             <sparkle:releaseNotesLink>
                 https://github.com/yefga/Switzy/releases/tag/v0.1.0
             </sparkle:releaseNotesLink>
             <pubDate>Sat, 28 Mar 2026 15:42:00 +0700</pubDate>
-            <enclosure 
-                url="https://github.com/yefga/Switzy/releases/download/v0.1.0/Switzy-v0.1.0.dmg" 
-                sparkle:version="1" 
-                sparkle:shortVersionString="0.1.0" 
-                sparkle:edSignature="Sur6vYbHsJJ9W1z0CTAWPgVLq6ZgBT6xdGpe46U5LFk72SRWvdZz2y44Xyr1Es2fSqG9Mvr03zU9ohTI33kWDg==" 
-                length="1887436" 
+            <enclosure
+                url="https://github.com/yefga/Switzy/releases/download/v0.1.0/Switzy-v0.1.0.dmg"
+                sparkle:version="1"
+                sparkle:shortVersionString="0.1.0"
+                sparkle:edSignature="Sur6vYbHsJJ9W1z0CTAWPgVLq6ZgBT6xdGpe46U5LFk72SRWvdZz2y44Xyr1Es2fSqG9Mvr03zU9ohTI33kWDg=="
+                length="1887436"
                 type="application/octet-stream" />
         </item>
     </channel>
