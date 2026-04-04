@@ -34,3 +34,6 @@ scripts
 
 # Local config (signing settings)
 Configs/Local.xcconfig
+
+# AI agents
+.qwen

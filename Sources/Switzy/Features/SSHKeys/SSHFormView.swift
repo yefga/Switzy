@@ -35,6 +35,20 @@ struct SSHFormView: View {
                 }
             }
         }
+        .alert(
+            "Delete SSH Key?",
+            isPresented: $viewModel.showDeleteConfirmation,
+            presenting: viewModel.keyToDelete
+        ) { key in
+            Button("Delete", role: .destructive) {
+                viewModel.deleteKey()
+            }
+            Button("Cancel", role: .cancel) {
+                viewModel.keyToDelete = nil
+            }
+        } message: { key in
+            Text("Are you sure you want to delete '\(key.filename)'? This will permanently remove the key file from your ~/.ssh directory.")
+        }
     }
 
     // MARK: - New Key Form
