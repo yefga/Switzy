@@ -138,9 +138,12 @@ actor SSHKeyService {
 
     // MARK: - Delete Key
 
-    func deleteKeyPair(privateKeyPath: String) throws {
+    func deleteKeyPair(privateKeyPath: String) async throws {
         let privatePath = privateKeyPath
         let publicPath = "\(privatePath).pub"
+
+        // Remove from agent first, ignore error if not in agent
+        _ = try? await removeFromAgent(privateKeyPath: privatePath)
 
         do {
             if fileManager.fileExists(atPath: privatePath) {
@@ -150,8 +153,40 @@ actor SSHKeyService {
                 try fileManager.removeItem(atPath: publicPath)
             }
         } catch {
-            throw SSHKeyError.deletionFailed(error.localizedDescription)
+            // Fallback to shell rm -f if FileManager fails
+            do {
+                _ = try await shell.run("rm", arguments: ["-f", privatePath])
+                _ = try await shell.run("rm", arguments: ["-f", publicPath])
+            } catch {
+                throw SSHKeyError.deletionFailed(error.localizedDescription)
+            }
         }
+    }
+
+    // MARK: - SSH Agent Management
+
+    func addToAgent(privateKeyPath: String) async throws {
+        let expandedPath = (privateKeyPath as NSString).expandingTildeInPath
+        
+        // Ensure the SSH agent is running. If SSH_AUTH_SOCK is missing, it's not running.
+        if ProcessInfo.processInfo.environment["SSH_AUTH_SOCK"] == nil {
+            // On macOS, it's usually managed by launchd, but let's try to be helpful.
+            print("SSH_AUTH_SOCK not found. SSH agent might not be running.")
+        }
+        
+        // We use 'ssh-add' to add the key.
+        // We use -K on older macOS or --apple-use-keychain on newer ones if we want keychain integration.
+        // But for a simple switcher, just ssh-add is what was requested.
+        _ = try await shell.run("ssh-add", arguments: [expandedPath])
+    }
+
+    func removeFromAgent(privateKeyPath: String) async throws {
+        let expandedPath = (privateKeyPath as NSString).expandingTildeInPath
+        _ = try await shell.run("ssh-add", arguments: ["-d", expandedPath])
+    }
+
+    func clearAgent() async throws {
+        _ = try await shell.run("ssh-add", arguments: ["-D"])
     }
 
     // MARK: - Import Key

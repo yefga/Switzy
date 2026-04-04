@@ -69,6 +69,19 @@ final class AppModel: ObservableObject {
 
         do {
             try await gitConfig.applyProfile(profile)
+            
+            // Activate SSH key in agent if provided
+            if let sshKeyPath = profile.sshKeyPath, !sshKeyPath.isEmpty {
+                do {
+                    // Try to clear default keys first? Or just add?
+                    // User said "ssh-add selected_ssh_on profile"
+                    try await sshService.addToAgent(privateKeyPath: sshKeyPath)
+                } catch {
+                    // Log but don't fail profile switch
+                    print("SSH-ADD failed: \(error.localizedDescription)")
+                }
+            }
+            
             activeProfileID = profile.id
             syncActiveFlags()
             saveProfiles()
