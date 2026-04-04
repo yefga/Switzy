@@ -60,19 +60,34 @@ struct ProfileRowView: View {
             Spacer()
 
             if !viewModel.showForm || !isSelected {
-                Button {
-                    appModel.selectedProfileID = profile.id
-                    withAnimation {
-                        viewModel.showForm = true
-                        viewModel.isCreatingNewProfile = false
-                        viewModel.loadProfile(currentProfile: appModel.selectedProfile)
+                HStack(spacing: Constants.Spacing.lg) {
+                    if !profile.isActive {
+                        Button {
+                            Task {
+                                await appModel.switchProfile(to: profile)
+                            }
+                        } label: {
+                            Text("Activate")
+                                .font(.system(size: 11, weight: .bold))
+                                .foregroundStyle(.green)
+                        }
+                        .buttonStyle(.plain)
                     }
-                } label: {
-                    Text("Edit")
-                        .font(.system(size: 11, weight: .medium))
-                        .foregroundStyle(.blue)
+
+                    Button {
+                        appModel.selectedProfileID = profile.id
+                        withAnimation {
+                            viewModel.showForm = true
+                            viewModel.isCreatingNewProfile = false
+                            viewModel.loadProfile(currentProfile: appModel.selectedProfile)
+                        }
+                    } label: {
+                        Text("Edit")
+                            .font(.system(size: 11, weight: .medium))
+                            .foregroundStyle(.blue)
+                    }
+                    .buttonStyle(.plain)
                 }
-                .buttonStyle(.plain)
             } else if isSelected && viewModel.showForm && !viewModel.isCreatingNewProfile {
                 Button {
                     withAnimation(.easeInOut(duration: Constants.Animation.defaultDuration)) {
