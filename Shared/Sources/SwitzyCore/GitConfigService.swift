@@ -34,12 +34,6 @@ actor GitConfigService {
 
     private let shell = ShellService()
 
-    private var gitConfigPath: String {
-        FileManager.default.homeDirectoryForCurrentUser
-            .appendingPathComponent(".gitconfig")
-            .path
-    }
-
     // MARK: - Read Current Config
 
     /// Read the current global git user.name.
@@ -78,7 +72,7 @@ actor GitConfigService {
         }
 
         if let sshKeyPath = profile.sshKeyPath, !sshKeyPath.isEmpty {
-            let expandedPath = (sshKeyPath as NSString).expandingTildeInPath
+            let expandedPath = expandTilde(in: sshKeyPath)
             let sshCommand = "ssh -i \(expandedPath)"
             _ = try await shell.run("git", arguments: ["config", "--global", "core.sshCommand", sshCommand])
         } else {
@@ -99,5 +93,17 @@ actor GitConfigService {
         return profiles.first { profile in
             profile.userName == name && profile.userEmail == email
         }?.id
+    }
+
+    private func expandTilde(in path: String) -> String {
+        guard path == "~" || path.hasPrefix("~/") else { return path }
+
+        let homeDirectory = FileManager.default.homeDirectoryForCurrentUser
+        if path == "~" {
+            return homeDirectory.path
+        }
+
+        let relativePath = String(path.dropFirst(2))
+        return homeDirectory.appendingPathComponent(relativePath).path
     }
 }

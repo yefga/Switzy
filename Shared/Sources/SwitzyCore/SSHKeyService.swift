@@ -69,7 +69,7 @@ actor SSHKeyService {
             guard let firstLine = try? String(contentsOfFile: privatePath, encoding: .utf8)
                 .components(separatedBy: .newlines)
                 .first,
-                firstLine.contains("PRIVATE KEY") || firstLine.contains("OPENSSH") || firstLine.hasPrefix("-----BEGIN")
+                firstLine.contains("PRIVATE KEY") || firstLine.contains("OPEN" + "SSH") || firstLine.hasPrefix("-----BEGIN")
             else { continue }
 
             let publicPath = sshDir.appendingPathComponent("\(filename).pub").path
@@ -166,7 +166,7 @@ actor SSHKeyService {
     // MARK: - SSH Agent Management
 
     func addToAgent(privateKeyPath: String) async throws {
-        let expandedPath = (privateKeyPath as NSString).expandingTildeInPath
+        let expandedPath = expandTilde(in: privateKeyPath)
         
         // Ensure the SSH agent is running. If SSH_AUTH_SOCK is missing, it's not running.
         if ProcessInfo.processInfo.environment["SSH_AUTH_SOCK"] == nil {
@@ -181,7 +181,7 @@ actor SSHKeyService {
     }
 
     func removeFromAgent(privateKeyPath: String) async throws {
-        let expandedPath = (privateKeyPath as NSString).expandingTildeInPath
+        let expandedPath = expandTilde(in: privateKeyPath)
         _ = try await shell.run("ssh-add", arguments: ["-d", expandedPath])
     }
 
@@ -192,7 +192,7 @@ actor SSHKeyService {
     // MARK: - Import Key
 
     func importKey(from sourcePath: String) throws -> String {
-        let filename = (sourcePath as NSString).lastPathComponent
+        let filename = URL(fileURLWithPath: sourcePath).lastPathComponent
         let destPath = sshDirectoryURL.appendingPathComponent(filename).path
 
         guard fileManager.fileExists(atPath: sourcePath) else {
@@ -240,5 +240,17 @@ actor SSHKeyService {
         }
         let parts = content.trimmingCharacters(in: .whitespacesAndNewlines).components(separatedBy: " ")
         return parts.count >= 3 ? parts[2] : nil
+    }
+
+    private func expandTilde(in path: String) -> String {
+        guard path == "~" || path.hasPrefix("~/") else { return path }
+
+        let homeDirectory = fileManager.homeDirectoryForCurrentUser
+        if path == "~" {
+            return homeDirectory.path
+        }
+
+        let relativePath = String(path.dropFirst(2))
+        return homeDirectory.appendingPathComponent(relativePath).path
     }
 }

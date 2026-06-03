@@ -36,7 +36,10 @@ let project = Project(
                 "SUPublicEDKey": "VPxm/ZBcopbZIw/fq28D6pFUh7fAAF2KTOoTN5Apy50=",
                 "SUEnableAutomaticChecks": true
             ]),
-            sources: ["Sources/Switzy/**"],
+            sources: [
+                "Sources/Switzy/**",
+                "../Shared/Sources/SwitzyCore/**",
+            ],
             resources: ["Resources/**"],
             dependencies: [
                 .package(product: "Sparkle")
