@@ -15,7 +15,9 @@ Switzy is a Git identity manager built around a shared Git/SSH core and platform
 
 Switzy's supported application is still the macOS app. Installation, development, and release notes for that app live in [macOS/README.md](macOS/README.md).
 
-The Sparkle feed remains available at the repository root as [appcast.xml](appcast.xml) for existing installed clients. Keep it synced with [macOS/appcast.xml](macOS/appcast.xml) until the feed URL is intentionally migrated.
+The Sparkle feed remains available at the repository root as [appcast.xml](appcast.xml) for existing macOS clients. Keep it synced with [macOS/appcast.xml](macOS/appcast.xml) until the macOS feed URL is intentionally migrated.
+
+Linux and Windows update metadata should be chosen with those native apps later. They should not depend on the current Sparkle appcast unless a future updater is deliberately selected that supports this format.
 
 ## License
 

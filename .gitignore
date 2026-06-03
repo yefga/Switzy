@@ -8,7 +8,6 @@ DerivedData/
 
 # Tuist
 Derived/
-**/.package.resolved
 Tuist/Dependencies
 Tuist/Package.resolved
 Tuist/.build
