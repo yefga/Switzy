@@ -1,10 +1,13 @@
 included:
-  - Sources
+  - Shared/Sources
+  - macOS/Sources
 
 excluded:
   - Derived
+  - macOS/Derived
   - .build
   - Tuist
+  - macOS/Tuist
 
 line_length:
   warning: 200

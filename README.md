@@ -1,59 +1,24 @@
 # Switzy
 
-**Effortless Git Identity Management for macOS**
+Switzy is a Git identity manager built around a shared Git/SSH core and platform-specific applications.
 
-Switzy is a lightweight, premium menu bar application designed for developers who juggle multiple Git identities. It simplifies the process of switching between different Git profiles (name, email, and SSH keys) with a single click, ensuring you always commit with the right credentials.
+![Switzy menu bar](macOS/demo.png)
 
-![Switzy Menu Bar](demo.png)
+## Repository Layout
 
-## Core Features
+- `Shared/` contains reusable Foundation-only Git profile, Git config, shell, and SSH key logic.
+- `macOS/` contains the current SwiftUI/AppKit menu bar app, Tuist project, resources, Sparkle metadata, Homebrew cask copy, and release tooling.
+- `Linux/` is a placeholder for future Linux work. No Linux build is supported yet.
+- `Windows/` is a placeholder for future Windows work. No Windows build is supported yet.
 
-- **🚀 Instant Identity Switching**: Toggle between work, personal, and project-specific Git profiles from the menu bar.
-- **🔑 SSH Key Management**: Generate and manage SSH keys directly within the app without touching the terminal.
-- **✨ Premium UI**: A modern, glassmorphic interface that feels right at home on macOS.
-- **🔄 Auto Configuration**: Automatically updates your global or local `.gitconfig` as you switch profiles.
-- **🔔 Sparkle Updates**: Receive seamless notifications when a new version is available for one-click updating.
+## macOS
 
-## Installation
+Switzy's supported application is still the macOS app. Installation, development, and release notes for that app live in [macOS/README.md](macOS/README.md).
 
-### Via Homebrew (Recommended)
+The Sparkle feed remains available at the repository root as [appcast.xml](appcast.xml) for existing macOS clients. Keep it synced with [macOS/appcast.xml](macOS/appcast.xml) until the macOS feed URL is intentionally migrated.
 
-You can install Switzy using Homebrew by tapping the official repository:
-
-```bash
-brew tap yefga/tap
-brew install --cask switzy
-```
-
-### Manual Installation
-
-1. Download the latest `.dmg` from the [Releases](https://github.com/yefga/Switzy/releases) page.
-2. Open the DMG and drag **Switzy.app** into your **Applications** folder.
-
-## 🛡️ Note on Security (Notarization)
-
-Switzy's official releases are **Notarized by Apple**. This means the app has been verified to be free of malware, and it will run smoothly on your Mac without any security warnings.
-
-If you build Switzy from source, you may still need to perform the standard "Right-click -> Open" process for unnotarized binaries.
-
-## Development
-
-Switzy is built with **SwiftUI** and managed using **Tuist**.
-
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/yefga/Switzy.git
-   cd Switzy
-   ```
-2. Generate the project:
-   ```bash
-   tuist generate
-   ```
-3. Open `Switzy.xcworkspace` and run the `Switzy` scheme.
+Linux and Windows update metadata should be chosen with those native apps later. They should not depend on the current Sparkle appcast unless a future updater is deliberately selected that supports this format.
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
----
-Created by [Yefga](https://github.com/yefga)
+This project is licensed under the MIT License. See [LICENSE](LICENSE) for details.

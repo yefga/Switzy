@@ -8,9 +8,9 @@ DerivedData/
 
 # Tuist
 Derived/
-/Tuist/Dependencies
-/Tuist/Package.resolved
-/Tuist/.build
+Tuist/Dependencies
+Tuist/Package.resolved
+Tuist/.build
 
 # Swift Package Manager
 .build/
@@ -30,10 +30,10 @@ Packages/
 .gemini
 .claude
 Examples
-scripts
+/scripts/
 
 # Local config (signing settings)
-Configs/Local.xcconfig
+**/Configs/Local.xcconfig
 
 # AI agents
 .qwen
