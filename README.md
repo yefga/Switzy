@@ -15,6 +15,17 @@ Switzy is a Git identity manager built around a shared Git/SSH core and platform
 
 Switzy's supported application is still the macOS app. Installation, development, and release notes for that app live in [macOS/README.md](macOS/README.md).
 
+### Installation
+
+Install Switzy with Homebrew:
+
+```bash
+brew tap yefga/tap
+brew install --cask switzy
+```
+
+Alternatively, download the latest notarized `.dmg` from [GitHub Releases](https://github.com/yefga/Switzy/releases), open it, and drag `Switzy.app` into `Applications`.
+
 The Sparkle feed remains available at the repository root as [appcast.xml](appcast.xml) for existing macOS clients. Keep it synced with [macOS/appcast.xml](macOS/appcast.xml) until the macOS feed URL is intentionally migrated.
 
 Linux and Windows update metadata should be chosen with those native apps later. They should not depend on the current Sparkle appcast unless a future updater is deliberately selected that supports this format.
