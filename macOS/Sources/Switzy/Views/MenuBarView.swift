@@ -35,9 +35,6 @@ struct MenuBarView: View {
             )
             .opacity(Constants.Opacity.backgroundBlur)
         )
-        .onAppear {
-            appModel.loadOnLaunch()
-        }
     }
 
     // MARK: - Header
@@ -169,14 +166,20 @@ struct MenuBarView: View {
                             size: Constants.FontSize.body,
                             weight: .medium
                         ))
+                        .lineLimit(1)
 
-                    Text("\(profile.userName) · \(profile.userEmail)")
+                    Text(Constants.Strings.profileIdentity(
+                        userName: profile.userName,
+                        email: profile.userEmail
+                    ))
                         .font(.system(size: Constants.FontSize.caption))
                         .foregroundStyle(.secondary)
                         .lineLimit(1)
                 }
 
                 Spacer()
+
+                GitProviderBadge(provider: profile.resolvedGitProvider)
             }
             .padding(.horizontal, Constants.Spacing.xxl)
             .padding(.vertical, Constants.Spacing.lg)
@@ -219,6 +222,14 @@ struct MenuBarView: View {
                 title: Constants.Strings.manageProfile
             ) {
                 appModel.openManagementWindow(tab: .profile)
+            }
+
+            actionRow(
+                id: "settings",
+                icon: Constants.SystemImage.settings,
+                title: Constants.Strings.openSettings
+            ) {
+                appModel.openManagementWindow(tab: .settings)
             }
         }
     }

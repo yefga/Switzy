@@ -13,7 +13,7 @@ struct SSHSidebarView: View {
     var body: some View {
         SidebarListView(
             title: Constants.Strings.sshKeys,
-            subtitle: "\(viewModel.keys.count) keys",
+            subtitle: Constants.Strings.sshKeyCount(viewModel.keys.count),
             items: viewModel.keys
         ) { key in
             sshKeyRow(key: key)

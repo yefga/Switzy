@@ -37,7 +37,7 @@ final class AboutWindowController {
         )
         
         newWindow.contentViewController = hostingController
-        newWindow.title = "About Switzy"
+        newWindow.title = Constants.Strings.aboutApp
         newWindow.titleVisibility = .visible
         newWindow.titlebarAppearsTransparent = true
         newWindow.isMovableByWindowBackground = true

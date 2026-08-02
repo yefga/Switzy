@@ -12,6 +12,7 @@ final class ProfileFormViewModel: ObservableObject {
     @Published var profileName: String = ""
     @Published var gitUserName: String = ""
     @Published var gitEmail: String = ""
+    @Published var gitProvider: GitProvider = .other
     @Published var selectedSSHKey: String = ""
     @Published var availableKeys: [String] = []
     
@@ -29,6 +30,7 @@ final class ProfileFormViewModel: ObservableObject {
         profileName = profile.name
         gitUserName = profile.userName
         gitEmail = profile.userEmail
+        gitProvider = profile.resolvedGitProvider
         selectedSSHKey = profile.sshKeyPath ?? ""
     }
 
@@ -36,6 +38,7 @@ final class ProfileFormViewModel: ObservableObject {
         profileName = ""
         gitUserName = ""
         gitEmail = ""
+        gitProvider = .other
         selectedSSHKey = ""
     }
 
@@ -45,6 +48,7 @@ final class ProfileFormViewModel: ObservableObject {
                 name: profileName,
                 userName: gitUserName,
                 userEmail: gitEmail,
+                gitProvider: gitProvider,
                 sshKeyPath: selectedSSHKey.isEmpty ? nil : selectedSSHKey
             )
             appModel.addOrUpdateProfile(newProfile)
@@ -59,6 +63,7 @@ final class ProfileFormViewModel: ObservableObject {
             updated.name = profileName
             updated.userName = gitUserName
             updated.userEmail = gitEmail
+            updated.gitProvider = gitProvider
             updated.sshKeyPath = selectedSSHKey.isEmpty ? nil : selectedSSHKey
             appModel.addOrUpdateProfile(updated)
             withAnimation {

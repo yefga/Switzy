@@ -7,47 +7,25 @@
 
 import SwiftUI
 
-struct GlassBackground: ViewModifier {
+struct PanelBackground: ViewModifier {
     var cornerRadius: CGFloat
-    var material: NSVisualEffectView.Material
-    var opacity: Double
 
     init(
-        cornerRadius: CGFloat = Constants.Layout.cornerRadius,
-        material: NSVisualEffectView.Material = .hudWindow,
-        opacity: Double = 0.7
+        cornerRadius: CGFloat = Constants.Layout.cornerRadius
     ) {
         self.cornerRadius = cornerRadius
-        self.material = material
-        self.opacity = opacity
     }
 
     func body(content: Content) -> some View {
         content
             .background(
-                ZStack {
-                    VisualEffectView(
-                        material: material,
-                        blendingMode: .behindWindow,
-                        state: .active
-                    )
-
-                    LinearGradient(
-                        colors: [
-                            Color.white.opacity(Constants.Opacity.glassHighlight),
-                            Color.white.opacity(Constants.Opacity.hover),
-                        ],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    )
-                }
+                Color(nsColor: .controlBackgroundColor)
                 .clipShape(
                     RoundedRectangle(
                         cornerRadius: cornerRadius,
                         style: .continuous
                     )
                 )
-                .opacity(opacity)
             )
             .overlay(
                 RoundedRectangle(
@@ -55,14 +33,7 @@ struct GlassBackground: ViewModifier {
                     style: .continuous
                 )
                 .strokeBorder(
-                    LinearGradient(
-                        colors: [
-                            Color.white.opacity(Constants.Opacity.glassBorder),
-                            Color.white.opacity(Constants.Opacity.active),
-                        ],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    ),
+                    Color(nsColor: .separatorColor),
                     lineWidth: Constants.Layout.borderWidth
                 )
             )
@@ -70,15 +41,11 @@ struct GlassBackground: ViewModifier {
 }
 
 extension View {
-    func glassBackground(
-        cornerRadius: CGFloat = Constants.Layout.cornerRadius,
-        material: NSVisualEffectView.Material = .hudWindow,
-        opacity: Double = 0.7
+    func panelBackground(
+        cornerRadius: CGFloat = Constants.Layout.cornerRadius
     ) -> some View {
-        modifier(GlassBackground(
-            cornerRadius: cornerRadius,
-            material: material,
-            opacity: opacity
+        modifier(PanelBackground(
+            cornerRadius: cornerRadius
         ))
     }
 }

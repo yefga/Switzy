@@ -36,18 +36,18 @@ struct SSHFormView: View {
             }
         }
         .alert(
-            "Delete SSH Key?",
+            Constants.Strings.deleteSSHTitle,
             isPresented: $viewModel.showDeleteConfirmation,
             presenting: viewModel.keyToDelete
         ) { key in
-            Button("Delete", role: .destructive) {
+            Button(Constants.Strings.delete, role: .destructive) {
                 viewModel.deleteKey()
             }
-            Button("Cancel", role: .cancel) {
+            Button(Constants.Strings.cancel, role: .cancel) {
                 viewModel.keyToDelete = nil
             }
         } message: { key in
-            Text("Are you sure you want to delete '\(key.filename)'? This will permanently remove the key file from your ~/.ssh directory.")
+            Text(Constants.Strings.deleteSSHKeyMessage(filename: key.filename))
         }
     }
 
@@ -81,11 +81,7 @@ struct SSHFormView: View {
             statusMessages
         }
         .padding(Constants.Spacing.xxxl)
-        .glassBackground(
-            cornerRadius: Constants.Layout.cornerRadius,
-            material: .hudWindow,
-            opacity: 0.5
-        )
+        .panelBackground(cornerRadius: Constants.Layout.cornerRadius)
     }
 
     @ViewBuilder

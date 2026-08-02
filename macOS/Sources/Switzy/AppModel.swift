@@ -15,6 +15,15 @@ final class AppModel: ObservableObject {
 
     @Published var availableProfiles: [GitProfile] = []
     @Published var activeProfileID: UUID?
+    @Published var availableSSHKeyCount: Int = 0
+    @Published var statusBarDisplayMode: Constants.StatusBarDisplayMode {
+        didSet {
+            userDefaults.set(
+                statusBarDisplayMode.rawValue,
+                forKey: Constants.Persistence.statusBarDisplayModeKey
+            )
+        }
+    }
     @Published var isLoading: Bool = false
     @Published var errorMessage: String?
 
@@ -22,10 +31,20 @@ final class AppModel: ObservableObject {
 
     private let gitConfig = GitConfigService()
     private let sshService = SSHKeyService()
+    private let userDefaults: UserDefaults
 
     // MARK: - Task Management
 
     private var loadTask: Task<Void, Never>?
+
+    init(userDefaults: UserDefaults = .standard) {
+        self.userDefaults = userDefaults
+        let savedMode = userDefaults.string(
+            forKey: Constants.Persistence.statusBarDisplayModeKey
+        )
+        statusBarDisplayMode = Constants.StatusBarDisplayMode(rawValue: savedMode ?? "")
+            ?? .iconOnly
+    }
 
     deinit {
         loadTask?.cancel()
@@ -40,6 +59,7 @@ final class AppModel: ObservableObject {
             loadSavedProfiles()
             await importCurrentGitProfileIfNeeded()
             await detectActiveProfile()
+            await loadSSHKeyCount()
             isLoading = false
         }
     }
@@ -122,6 +142,64 @@ final class AppModel: ObservableObject {
         availableProfiles.first { $0.id == activeProfileID }
     }
 
+    var statusBarTitle: String? {
+        switch statusBarDisplayMode {
+        case .iconOnly:
+            return nil
+        case .activeProfile:
+            return activeProfileStatusTitle
+        case .profileCount:
+            return Constants.Strings.profileCount(availableProfiles.count)
+        case .sshKeyCount:
+            return Constants.Strings.sshKeyCount(availableSSHKeyCount)
+        }
+    }
+
+    func statusBarOptionLabel(for mode: Constants.StatusBarDisplayMode) -> String {
+        if mode == .iconOnly {
+            return mode.title
+        }
+        return Constants.Strings.settingOption(
+            title: mode.title,
+            value: statusBarValue(for: mode)
+        )
+    }
+
+    func statusBarValue(for mode: Constants.StatusBarDisplayMode) -> String {
+        switch mode {
+        case .iconOnly:
+            return Constants.Strings.noAdditionalText
+        case .activeProfile:
+            return activeProfileStatusTitle
+        case .profileCount:
+            return Constants.Strings.profileCount(availableProfiles.count)
+        case .sshKeyCount:
+            return Constants.Strings.sshKeyCount(availableSSHKeyCount)
+        }
+    }
+
+    private var activeProfileStatusTitle: String {
+        guard let activeProfile else {
+            return Constants.Strings.noActiveProfile
+        }
+
+        return Constants.Strings.profilePlatform(
+            name: activeProfile.name,
+            platform: activeProfile.resolvedGitProvider.statusBarName
+        )
+    }
+
+    func refreshSSHKeyCount() {
+        Task { [weak self] in
+            guard let self else { return }
+            await loadSSHKeyCount()
+        }
+    }
+
+    func updateSSHKeyCount(_ count: Int) {
+        availableSSHKeyCount = count
+    }
+
     // MARK: - Import Current Git Config
 
     private func importCurrentGitProfileIfNeeded() async {
@@ -151,6 +229,12 @@ final class AppModel: ObservableObject {
             availableProfiles[index].isActive = (
                 availableProfiles[index].id == activeProfileID
             )
+        }
+    }
+
+    private func loadSSHKeyCount() async {
+        if let keys = try? await sshService.scanKeys() {
+            availableSSHKeyCount = keys.count
         }
     }
 

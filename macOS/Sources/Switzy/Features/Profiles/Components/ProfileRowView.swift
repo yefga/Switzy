@@ -24,7 +24,7 @@ struct ProfileRowView: View {
                         ))
                     
                     if profile.isActive {
-                        Text("ACTIVE")
+                        Text(Constants.Strings.active.uppercased())
                             .font(.system(size: 8, weight: .bold))
                             .padding(.horizontal, 6)
                             .padding(.vertical, 2)
@@ -43,7 +43,10 @@ struct ProfileRowView: View {
                     }
                 }
                 
-                Text("\(profile.userName) · \(profile.userEmail)")
+                Text(Constants.Strings.profileIdentity(
+                    userName: profile.userName,
+                    email: profile.userEmail
+                ))
                     .font(.system(size: Constants.FontSize.caption))
                     .foregroundStyle(.secondary)
                 
@@ -67,7 +70,7 @@ struct ProfileRowView: View {
                                 await appModel.switchProfile(to: profile)
                             }
                         } label: {
-                            Text("Activate")
+                            Text(Constants.Strings.activate)
                                 .font(.system(size: 11, weight: .bold))
                                 .foregroundStyle(.green)
                         }
@@ -82,7 +85,7 @@ struct ProfileRowView: View {
                             viewModel.loadProfile(currentProfile: appModel.selectedProfile)
                         }
                     } label: {
-                        Text("Edit")
+                        Text(Constants.Strings.edit)
                             .font(.system(size: 11, weight: .medium))
                             .foregroundStyle(.blue)
                     }
@@ -94,7 +97,7 @@ struct ProfileRowView: View {
                         viewModel.showForm = false
                     }
                 } label: {
-                    Text("Done")
+                    Text(Constants.Strings.done)
                         .font(.system(size: 11, weight: .bold))
                         .foregroundStyle(.blue)
                 }
@@ -112,11 +115,7 @@ struct ProfileRowView: View {
             .padding(.leading, 12)
         }
         .padding(Constants.Spacing.xxl)
-        .glassBackground(
-            cornerRadius: Constants.Layout.cornerRadiusSmall,
-            material: .hudWindow,
-            opacity: 0.4
-        )
+        .panelBackground(cornerRadius: Constants.Layout.cornerRadiusSmall)
         .overlay(
             RoundedRectangle(cornerRadius: Constants.Layout.cornerRadiusSmall)
                 .stroke(isSelected ? Color.blue.opacity(0.3) : Color.clear, lineWidth: 1)

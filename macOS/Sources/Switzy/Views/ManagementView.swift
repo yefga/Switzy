@@ -13,22 +13,30 @@ struct ManagementView: View {
     @StateObject private var sshKeysViewModel = SSHKeysViewModel()
 
     var body: some View {
-        VStack(spacing: 0) {
-            contentHeader
-            Divider().opacity(Constants.Opacity.divider)
-            contentArea   
-        }
-        .background(
-            VisualEffectView(
-                material: .underWindowBackground,
-                blendingMode: .behindWindow,
-                state: .active
-            )
-        )
+        contentArea
+        .background(Color(nsColor: .windowBackgroundColor))
         .frame(
             minWidth: Constants.Layout.managementWidth,
             minHeight: Constants.Layout.managementHeight
         )
+        .toolbar {
+            if #available(macOS 26.0, *) {
+                ToolbarItem(placement: .principal) {
+                    managementTabSelector
+                }
+                .sharedBackgroundVisibility(.hidden)
+            } else {
+                ToolbarItem(placement: .principal) {
+                    managementTabSelector
+                }
+            }
+
+            ToolbarItem(placement: .primaryAction) {
+                if appModel.selectedManagementTab != .settings {
+                    managementActionButton
+                }
+            }
+        }
         .overlay(alignment: .bottom) {
             if let message = sshKeysViewModel.statusMessage {
                 Text(message)
@@ -47,111 +55,58 @@ struct ManagementView: View {
         .onAppear {
             sshKeysViewModel.loadKeys()
         }
+        .onChange(of: sshKeysViewModel.keys) { keys in
+            appModel.updateSSHKeyCount(keys.count)
+        }
     }
     
-    // MARK: - Content Header
+    // MARK: - Toolbar
     
     @ViewBuilder
-    private var contentHeader: some View {
-        HStack {
-            tabToggle
-            Spacer()
-            
-            Button {
-                withAnimation(.easeInOut(duration: Constants.Animation.defaultDuration)) {
-                    if appModel.selectedManagementTab == .profile {
-                        if !viewModel.showProfileForm {
-                            viewModel.showProfileForm = true
-                            viewModel.isCreatingNewProfile = true
-                        } else if viewModel.isCreatingNewProfile {
-                            viewModel.showProfileForm = false
-                            viewModel.isCreatingNewProfile = false
-                        } else {
-                            viewModel.isCreatingNewProfile = true
-                        }
-                    } else {
-                        viewModel.showNewSSHKeyForm.toggle()
-                    }
-                }
-            } label: {
-                let isMinus = appModel.selectedManagementTab == .profile 
-                    ? (viewModel.showProfileForm && viewModel.isCreatingNewProfile)
-                    : viewModel.showNewSSHKeyForm
-                
-                Image(systemName: isMinus ? Constants.SystemImage.minus : Constants.SystemImage.plus)
-                    .font(.system(size: Constants.FontSize.body))
-            }
-            .buttonStyle(.plain)
-        }
-        .padding(.horizontal, Constants.Spacing.xxxxl)
-        .padding(.vertical, Constants.Spacing.xxl)
-    }
-
-    @ViewBuilder
-    private var tabToggle: some View {
-        ZStack(alignment: .leading) {
-            GeometryReader { geo in
-                let tabs = Constants.ManagementTab.allCases
-                let pillWidth = geo.size.width / CGFloat(tabs.count)
-                let selectedIndex = tabs.firstIndex(of: appModel.selectedManagementTab) ?? 0
-                
-                RoundedRectangle(cornerRadius: Constants.Layout.cornerRadiusCapsule, style: .continuous)
-                    .fill(
-                        LinearGradient(
-                            colors: [Color.blue, Color.blue.opacity(0.7)],
-                            startPoint: .top,
-                            endPoint: .bottom
-                        )
-                    )
-                    .overlay(
-                        RoundedRectangle(cornerRadius: Constants.Layout.cornerRadiusCapsule, style: .continuous)
-                            .strokeBorder(Color.white.opacity(Constants.Opacity.divider), lineWidth: 0.5)
-                    )
-                    .padding(2)
-                    .frame(width: pillWidth)
-                    .offset(x: CGFloat(selectedIndex) * pillWidth)
-            }
-            
-            HStack(spacing: 0) {
-                ForEach(Constants.ManagementTab.allCases) { tab in
-                    tabPill(for: tab)
-                }
-            }
-        }
-        .frame(width: 200, height: Constants.Layout.tabPillHeight)
-        .glassBackground(
-            cornerRadius: Constants.Layout.cornerRadiusCapsule,
-            material: .hudWindow,
-            opacity: 0.25
-        )
-        .shadow(color: .black.opacity(0.1), radius: 2, x: 0, y: 1)
-    }
-
-    @ViewBuilder
-    private func tabPill(for tab: Constants.ManagementTab) -> some View {
+    private var managementActionButton: some View {
         Button {
-            withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
-                viewModel.selectTab(appModel: appModel, tab: tab)
+            withAnimation(.easeInOut(duration: Constants.Animation.defaultDuration)) {
+                if appModel.selectedManagementTab == .profile {
+                    if !viewModel.showProfileForm {
+                        viewModel.showProfileForm = true
+                        viewModel.isCreatingNewProfile = true
+                    } else if viewModel.isCreatingNewProfile {
+                        viewModel.showProfileForm = false
+                        viewModel.isCreatingNewProfile = false
+                    } else {
+                        viewModel.isCreatingNewProfile = true
+                    }
+                } else {
+                    viewModel.showNewSSHKeyForm.toggle()
+                }
             }
         } label: {
-            let count = tab == .profile ? appModel.availableProfiles.count : sshKeysViewModel.keys.count
-            let icon = tab == .profile ? Constants.SystemImage.profileManage : Constants.SystemImage.sshManage
-            
-            HStack(spacing: Constants.Spacing.sm) {
-                Image(systemName: icon)
-                    .font(.system(size: Constants.FontSize.caption))
-                Text("\(tab.rawValue) (\(count))")
-                    .font(.system(
-                        size: Constants.FontSize.caption,
-                        weight: appModel.selectedManagementTab == tab ? .semibold : .regular
-                    ))
-            }
-            .frame(maxWidth: .infinity)
-            .frame(height: Constants.Layout.tabPillHeight)
+            let isMinus = appModel.selectedManagementTab == .profile
+                ? (viewModel.showProfileForm && viewModel.isCreatingNewProfile)
+                : viewModel.showNewSSHKeyForm
+
+            Image(systemName: isMinus ? Constants.SystemImage.minus : Constants.SystemImage.plus)
+                .font(.system(size: Constants.FontSize.body))
         }
-        .buttonStyle(.plain)
-        .foregroundStyle(
-            appModel.selectedManagementTab == tab ? .white : .secondary
+        .help(actionButtonHelp)
+    }
+
+    private var actionButtonHelp: String {
+        if appModel.selectedManagementTab == .profile {
+            return viewModel.showProfileForm && viewModel.isCreatingNewProfile
+                ? Constants.Strings.cancel
+                : Constants.Strings.addProfile
+        }
+
+        return viewModel.showNewSSHKeyForm
+            ? Constants.Strings.cancel
+            : Constants.Strings.generateKey
+    }
+
+    private var managementTabSelector: some View {
+        ManagementTabSelector(
+            viewModel: viewModel,
+            sshKeysViewModel: sshKeysViewModel
         )
     }
 
@@ -182,6 +137,8 @@ struct ManagementView: View {
                         insertion: .move(edge: viewModel.transitionDirection == .trailing ? .trailing : .leading).combined(with: .opacity),
                         removal: .move(edge: viewModel.transitionDirection == .trailing ? .trailing : .leading).combined(with: .opacity)
                     ))
+            case .settings:
+                EmptyView()
             }
             
         }
@@ -193,7 +150,7 @@ struct ManagementView: View {
     private var profileSidebar: some View {
         SidebarListView(
             title: Constants.Label.profiles,
-            subtitle: "\(appModel.availableProfiles.count) profiles",
+            subtitle: Constants.Strings.profileCount(appModel.availableProfiles.count),
             items: appModel.availableProfiles
         ) { profile in
             sidebarProfileRow(profile: profile)
@@ -271,15 +228,21 @@ struct ManagementView: View {
                         removal: .move(edge: viewModel.transitionDirection == .trailing ? .leading : .trailing).combined(with: .opacity)
                     ))
             } else {
-                SSHFormView()
-                    .environmentObject(viewModel)
-                    .environmentObject(sshKeysViewModel)
-                    .transition(.asymmetric(
-                        insertion: .move(edge: viewModel.transitionDirection == .trailing ? .trailing : .leading).combined(with: .opacity),
-                        removal: .move(edge: viewModel.transitionDirection == .trailing ? .trailing : .leading).combined(with: .opacity)
-                    ))
+                if appModel.selectedManagementTab == .ssh {
+                    SSHFormView()
+                        .environmentObject(viewModel)
+                        .environmentObject(sshKeysViewModel)
+                        .transition(.asymmetric(
+                            insertion: .move(edge: viewModel.transitionDirection == .trailing ? .trailing : .leading).combined(with: .opacity),
+                            removal: .move(edge: viewModel.transitionDirection == .trailing ? .trailing : .leading).combined(with: .opacity)
+                        ))
+                } else {
+                    ManagementSettingsView()
+                        .transition(.opacity)
+                }
             }
         }
         .clipped()
     }
+
 }

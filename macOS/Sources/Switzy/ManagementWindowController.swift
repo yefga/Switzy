@@ -66,9 +66,10 @@ final class ManagementWindowController {
         )
         newWindow.isReleasedWhenClosed = false
         newWindow.titlebarAppearsTransparent = false
-        newWindow.titleVisibility = .visible
-        newWindow.isOpaque = false
-        newWindow.backgroundColor = .black.withAlphaComponent(0.8)
+        newWindow.titleVisibility = .hidden
+        newWindow.toolbarStyle = .unified
+        newWindow.isOpaque = true
+        newWindow.backgroundColor = .windowBackgroundColor
 
         self.window = newWindow
         DispatchQueue.main.async { [weak self] in

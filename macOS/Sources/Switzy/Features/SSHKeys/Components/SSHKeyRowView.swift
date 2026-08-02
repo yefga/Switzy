@@ -77,7 +77,7 @@ struct SSHKeyRowView: View {
                 VStack(alignment: .leading, spacing: Constants.Spacing.xl) {
                     if let fingerprint = key.fingerprint {
                         VStack(alignment: .leading, spacing: Constants.Spacing.sm) {
-                            Text("FINGERPRINT")
+                            Text(Constants.Strings.fingerprintHeading)
                                 .font(.system(size: 9, weight: .bold))
                                 .foregroundStyle(.tertiary)
                             
@@ -91,7 +91,10 @@ struct SSHKeyRowView: View {
                                 Spacer()
                                 
                                 Button {
-                                    copyToClipboard(fingerprint, label: "Fingerprint")
+                                    copyToClipboard(
+                                        fingerprint,
+                                        label: Constants.Strings.fingerprint
+                                    )
                                 } label: {
                                     Image(systemName: Constants.SystemImage.copy)
                                         .font(.system(size: 12))
@@ -106,8 +109,8 @@ struct SSHKeyRowView: View {
                     }
                     
                     HStack(spacing: Constants.Spacing.xxxl) {
-                        dateInfo(label: "CREATED", date: key.createdAt)
-                        dateInfo(label: "EXPIRES", date: key.expiresAt)
+                        dateInfo(label: Constants.Strings.createdHeading, date: key.createdAt)
+                        dateInfo(label: Constants.Strings.expiresHeading, date: key.expiresAt)
                         
                         Spacer()
                         
@@ -121,7 +124,10 @@ struct SSHKeyRowView: View {
                                     )
                                 }
                             } label: {
-                                Label("Public Key", systemImage: Constants.SystemImage.copy)
+                                Label(
+                                    Constants.Strings.publicKey,
+                                    systemImage: Constants.SystemImage.copy
+                                )
                                     .font(.system(size: 11, weight: .medium))
                             }
                             .buttonStyle(.bordered)
@@ -143,11 +149,7 @@ struct SSHKeyRowView: View {
                 .transition(.move(edge: .top).combined(with: .opacity))
             }
         }
-        .glassBackground(
-            cornerRadius: Constants.Layout.cornerRadiusSmall,
-            material: .hudWindow,
-            opacity: 0.4
-        )
+        .panelBackground(cornerRadius: Constants.Layout.cornerRadiusSmall)
     }
     
     @ViewBuilder
@@ -162,7 +164,7 @@ struct SSHKeyRowView: View {
                     .font(.system(size: 11))
                     .foregroundStyle(.secondary)
             } else {
-                Text("N/A")
+                Text(Constants.Strings.notAvailable)
                     .font(.system(size: 11))
                     .foregroundStyle(.tertiary)
             }
@@ -172,6 +174,6 @@ struct SSHKeyRowView: View {
     private func copyToClipboard(_ text: String, label: String) {
         NSPasteboard.general.clearContents()
         NSPasteboard.general.setString(text, forType: .string)
-        viewModel.showStatus("\(label) copied!")
+        viewModel.showStatus(Constants.Strings.copied(label))
     }
 }

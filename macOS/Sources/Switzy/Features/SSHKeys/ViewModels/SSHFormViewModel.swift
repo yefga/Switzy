@@ -40,7 +40,7 @@ final class SSHFormViewModel: ObservableObject {
 
                 // Update UI on MainActor
                 if !Task.isCancelled {
-                    statusMessage = "Key generated successfully"
+                    statusMessage = Constants.Strings.keyGeneratedSuccessfully
                     resetForm()
                     onSuccess()
                 }
@@ -57,5 +57,4 @@ final class SSHFormViewModel: ObservableObject {
         passphrase = ""
     }
 }
-
 

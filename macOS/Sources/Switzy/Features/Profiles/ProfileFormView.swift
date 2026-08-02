@@ -75,11 +75,7 @@ struct ProfileFormView: View {
             saveButton
         }
         .padding(Constants.Spacing.xxxl)
-        .glassBackground(
-            cornerRadius: Constants.Layout.cornerRadius,
-            material: .hudWindow,
-            opacity: 0.5
-        )
+        .panelBackground(cornerRadius: Constants.Layout.cornerRadius)
     }
 
     @ViewBuilder
@@ -106,6 +102,20 @@ struct ProfileFormView: View {
                 label: Constants.Placeholder.gitEmail,
                 text: $viewModel.gitEmail
             )
+
+            VStack(alignment: .leading, spacing: Constants.Spacing.sm) {
+                Text(Constants.Label.gitHost)
+                    .font(.system(size: Constants.FontSize.caption))
+                    .foregroundStyle(.tertiary)
+
+                Picker("", selection: $viewModel.gitProvider) {
+                    ForEach(GitProvider.allCases) { provider in
+                        Text(provider.displayName).tag(provider)
+                    }
+                }
+                .labelsHidden()
+                .frame(maxWidth: .infinity, alignment: .leading)
+            }
         }
     }
 
@@ -157,7 +167,10 @@ struct ProfileFormView: View {
         Button {
             viewModel.saveProfile(appModel: appModel, currentProfile: appModel.selectedProfile)
         } label: {
-            Text(viewModel.isCreatingNewProfile ? "Create Profile" : Constants.Strings.saveChanges)
+            Text(viewModel.isCreatingNewProfile
+                ? Constants.Strings.createProfile
+                : Constants.Strings.saveChanges
+            )
                 .font(.system(
                     size: Constants.FontSize.body,
                     weight: .semibold

@@ -6,6 +6,7 @@
 //
 
 import Cocoa
+import Combine
 import SwiftUI
 #if canImport(Sparkle)
 import Sparkle
@@ -16,6 +17,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     private var statusItem: NSStatusItem?
     private var popover: NSPopover?
+    private var cancellables = Set<AnyCancellable>()
     
     #if canImport(Sparkle)
     private var updaterController: SPUStandardUpdaterController?
@@ -27,6 +29,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     // MARK: - NSApplicationDelegate
 
     func applicationDidFinishLaunching(_ notification: Notification) {
+        appModel.loadOnLaunch()
         setupStatusItem()
         setupPopover()
         
@@ -67,7 +70,26 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             }
             button.action = #selector(togglePopover(_:))
             button.target = self
+            button.imagePosition = .imageLeading
         }
+
+        Publishers.CombineLatest4(
+            appModel.$statusBarDisplayMode,
+            appModel.$activeProfileID,
+            appModel.$availableProfiles,
+            appModel.$availableSSHKeyCount
+        )
+        .sink { [weak self] _, _, _, _ in
+            self?.updateStatusItemTitle()
+        }
+        .store(in: &cancellables)
+    }
+
+    private func updateStatusItemTitle() {
+        let spacing = "\u{00A0}"
+        statusItem?.button?.title = appModel.statusBarTitle.map {
+            spacing + $0
+        } ?? ""
     }
 
     // MARK: - Popover

@@ -64,7 +64,7 @@ final class SSHKeysViewModel: ObservableObject {
                     privateKeyPath: key.privateKeyPath
                 )
                 keys.removeAll { $0.id == key.id }
-                showStatus("Deleted \(key.filename)")
+                showStatus(Constants.Strings.deleted(key.filename))
             } catch {
                 errorMessage = error.localizedDescription
             }

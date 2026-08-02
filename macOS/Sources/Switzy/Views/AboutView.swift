@@ -34,16 +34,19 @@ struct AboutView: View {
                 .fixedSize(horizontal: false, vertical: true)
             
             // Version Info
-            let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "0.1.0"
-            let build = Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "1"
-            
-            Text("\(Constants.Strings.version) \(version) (Build \(build))")
+            let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String
+                ?? Constants.Strings.defaultVersion
+            let build = Bundle.main.infoDictionary?["CFBundleVersion"] as? String
+                ?? Constants.Strings.defaultBuild
+
+            Text(Constants.Strings.versionDescription(version: version, build: build))
                 .font(.system(size: Constants.FontSize.callout))
                 .foregroundStyle(.secondary.opacity(0.8))
                 .padding(.top, Constants.Spacing.xxl)
             
             // Copyright
-            let copyright = Bundle.main.infoDictionary?["NSHumanReadableCopyright"] as? String ?? "Created by Yefga © 2026"
+            let copyright = Bundle.main.infoDictionary?["NSHumanReadableCopyright"] as? String
+                ?? Constants.Strings.defaultCopyright
             
             Text(copyright)
                 .font(.system(size: 11))
@@ -56,18 +59,21 @@ struct AboutView: View {
             
             // Description
             VStack(spacing: 12) {
-                Text("Seamlessly switch Git identities from your\nmacOS Menu Bar.")
+                Text(Constants.Strings.aboutDescription)
                     .multilineTextAlignment(.center)
                     .font(.system(size: 13))
                     .foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
                 
-                Text("Open for collaboration and contribution.")
+                Text(Constants.Strings.collaborationMessage)
                     .font(.system(size: 13, weight: .semibold))
                     .foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
                 
-                Link("GitHub Repository", destination: URL(string: "https://github.com/yefga/Switzy")!)
+                Link(
+                    Constants.Strings.githubRepository,
+                    destination: URL(string: "https://github.com/yefga/Switzy")!
+                )
                     .font(.system(size: 13))
                     .foregroundStyle(.blue)
             }

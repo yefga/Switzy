@@ -32,6 +32,7 @@ enum Constants {
         static let drive = "externaldrive.fill"
         static let warning = "exclamationmark.triangle.fill"
         static let checkmark = "checkmark.circle.fill"
+        static let circle = "circle"
         static let plus = "plus"
         static let minus = "minus"
         static let plusCircle = "plus.circle.fill"
@@ -88,7 +89,7 @@ enum Constants {
         static let activeIndicatorSize: CGFloat = 8
         static let statusBarIconSize: CGFloat = 18
         static let dotSize: CGFloat = 10
-        static let managementWidth: CGFloat = 680
+        static let managementWidth: CGFloat = 480
         static let managementHeight: CGFloat = 480
         static let sidebarWidth: CGFloat = 180
         static let tabPillHeight: CGFloat = 28
@@ -106,8 +107,6 @@ enum Constants {
         static let active: Double = 0.12
         static let secondary: Double = 0.6
         static let tertiary: Double = 0.4
-        static let glassHighlight: Double = 0.15
-        static let glassBorder: Double = 0.3
     }
 
     // MARK: - Strings
@@ -121,6 +120,7 @@ enum Constants {
         static let noSSHKeys = "No SSH Keys Found"
         static let noSSHKeysHint = "No keys were detected in ~/.ssh"
         static let addProfile = "Add Profile"
+        static let createProfile = "Create Profile"
         static let editProfile = "Edit Profile"
         static let newProfile = "New Profile"
         static let saveChanges = "Save Changes"
@@ -129,15 +129,36 @@ enum Constants {
         static let refresh = "Refresh"
         static let openSSH = "Open .ssh"
         static let active = "Active"
+        static let activate = "Activate"
+        static let edit = "Edit"
+        static let done = "Done"
         static let manageSSH = "Manage SSH"
         static let manageProfile = "Manage Profile"
+        static let openSettings = "Open Settings"
+        static let settings = "Settings"
+        static let statusBarDisplay = "Menu Bar Display"
+        static let statusBarDisplayDescription = "Choose what appears beside the Switzy menu bar icon."
+        static let preview = "PREVIEW"
+        static let showBesideIcon = "SHOW BESIDE ICON"
+        static let noAdditionalText = "No additional text"
+        static let iconOnly = "Icon Only"
+        static let activeProfile = "Active Profile"
+        static let profileCountOption = "Profile Count"
+        static let sshKeyCountOption = "SSH Key Count"
         static let quitSwitzy = "Quit Switzy"
         static let scanningSSH = "Scanning SSH keys..."
         static let deleteProfileTitle = "Delete Profile?"
         static let deleteProfileMessage = "This will remove the profile from Switzy."
         static let deleteSSHTitle = "Delete SSH Key?"
+        static let keyGeneratedSuccessfully = "Key generated successfully"
         static let publicKeyCopied = "Public key copied!"
         static let noPublicKey = "No public key found."
+        static let publicKey = "Public Key"
+        static let fingerprint = "Fingerprint"
+        static let fingerprintHeading = "FINGERPRINT"
+        static let createdHeading = "CREATED"
+        static let expiresHeading = "EXPIRES"
+        static let notAvailable = "N/A"
         static let sshKeys = "SSH Keys"
         static let generateKey = "Generate Key"
         static let selectYourKey = "Select your key"
@@ -153,6 +174,65 @@ enum Constants {
         static let updateNow = "Update Now"
         static let aboutApp = "About \(appName)"
         static let version = "Version"
+        static let build = "Build"
+        static let aboutDescription = "Seamlessly switch Git identities from your\nmacOS Menu Bar."
+        static let collaborationMessage = "Open for collaboration and contribution."
+        static let githubRepository = "GitHub Repository"
+        static let defaultVersion = "0.1.0"
+        static let defaultBuild = "1"
+        static let defaultCopyright = "Created by Yefga © 2026"
+
+        static let github = "GitHub"
+        static let gitlab = "GitLab"
+        static let bitbucket = "Bitbucket"
+        static let azureDevOps = "Azure DevOps"
+        static let azure = "Azure"
+        static let other = "Other"
+        static let git = "Git"
+
+        static func profileIdentity(userName: String, email: String) -> String {
+            "\(userName) · \(email)"
+        }
+
+        static func itemCount(title: String, count: Int) -> String {
+            "\(title) (\(count))"
+        }
+
+        static func profileCount(_ count: Int) -> String {
+            "\(count) profiles"
+        }
+
+        static func sshKeyCount(_ count: Int) -> String {
+            "\(count) keys"
+        }
+
+        static func gitHost(_ provider: String) -> String {
+            "Git host: \(provider)"
+        }
+
+        static func versionDescription(version: String, build: String) -> String {
+            "\(Constants.Strings.version) \(version) (\(Constants.Strings.build) \(build))"
+        }
+
+        static func deleteSSHKeyMessage(filename: String) -> String {
+            "Are you sure you want to delete '\(filename)'? This will permanently remove the key file from your ~/.ssh directory."
+        }
+
+        static func copied(_ label: String) -> String {
+            "\(label) copied!"
+        }
+
+        static func deleted(_ filename: String) -> String {
+            "Deleted \(filename)"
+        }
+
+        static func settingOption(title: String, value: String) -> String {
+            "\(title): \(value)"
+        }
+
+        static func profilePlatform(name: String, platform: String) -> String {
+            "\(name) # \(platform)"
+        }
     }
 
     // MARK: - Form Placeholders
@@ -172,6 +252,7 @@ enum Constants {
         static let profileName = "Profile Name"
         static let gitUserName = "Git User Name"
         static let gitEmail = "Git Email"
+        static let gitHost = "Git Host"
         static let sshKey = "SSH KEY"
         static let profiles = "Profiles"
         static let profile = "Profile"
@@ -190,15 +271,77 @@ enum Constants {
 
     enum Persistence {
         static let profilesKey = "com.yefga.switzy.profiles"
+        static let statusBarDisplayModeKey = "com.yefga.switzy.statusBarDisplayMode"
+    }
+
+    enum StatusBarDisplayMode: String, CaseIterable, Identifiable {
+        case iconOnly
+        case activeProfile
+        case profileCount
+        case sshKeyCount
+
+        var id: String { rawValue }
+
+        var title: String {
+            switch self {
+            case .iconOnly: return Constants.Strings.iconOnly
+            case .activeProfile: return Constants.Strings.activeProfile
+            case .profileCount: return Constants.Strings.profileCountOption
+            case .sshKeyCount: return Constants.Strings.sshKeyCountOption
+            }
+        }
+
+        var systemImage: String {
+            switch self {
+            case .iconOnly: return Constants.SystemImage.appIcon
+            case .activeProfile: return Constants.SystemImage.profile
+            case .profileCount: return Constants.SystemImage.profileManage
+            case .sshKeyCount: return Constants.SystemImage.sshManage
+            }
+        }
     }
 
     // MARK: - Management Tab
 
-    enum ManagementTab: String, CaseIterable, Identifiable {
-        case profile = "Profile"
-        case ssh = "SSH"
+    enum ManagementTab: CaseIterable, Identifiable, Hashable {
+        case profile
+        case ssh
+        case settings
 
-        var id: String { rawValue }
+        var id: Self { self }
+
+        var title: String {
+            switch self {
+            case .profile: return Constants.Label.profile
+            case .ssh: return Constants.Label.ssh
+            case .settings: return Constants.Strings.settings
+            }
+        }
     }
 }
 
+extension GitProvider {
+    var displayName: String {
+        switch self {
+        case .github: return Constants.Strings.github
+        case .gitlab: return Constants.Strings.gitlab
+        case .bitbucket: return Constants.Strings.bitbucket
+        case .azureDevOps: return Constants.Strings.azureDevOps
+        case .other: return Constants.Strings.other
+        }
+    }
+
+    var badgeLabel: String {
+        switch self {
+        case .github: return Constants.Strings.github
+        case .gitlab: return Constants.Strings.gitlab
+        case .bitbucket: return Constants.Strings.bitbucket
+        case .azureDevOps: return Constants.Strings.azure
+        case .other: return Constants.Strings.git
+        }
+    }
+
+    var statusBarName: String {
+        self == .other ? Constants.Strings.git : displayName
+    }
+}

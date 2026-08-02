@@ -7,11 +7,22 @@
 
 import Foundation
 
+enum GitProvider: String, CaseIterable, Codable, Identifiable {
+    case github
+    case gitlab
+    case bitbucket
+    case azureDevOps
+    case other
+
+    var id: String { rawValue }
+}
+
 struct GitProfile: Identifiable, Codable, Equatable, Hashable {
     var id: UUID
     var name: String
     var userName: String
     var userEmail: String
+    var gitProvider: GitProvider?
     var signingKey: String?
     var sshKeyPath: String?
     var isActive: Bool
@@ -21,6 +32,7 @@ struct GitProfile: Identifiable, Codable, Equatable, Hashable {
         name: String,
         userName: String,
         userEmail: String,
+        gitProvider: GitProvider? = nil,
         signingKey: String? = nil,
         sshKeyPath: String? = nil,
         isActive: Bool = false
@@ -29,9 +41,14 @@ struct GitProfile: Identifiable, Codable, Equatable, Hashable {
         self.name = name
         self.userName = userName
         self.userEmail = userEmail
+        self.gitProvider = gitProvider
         self.signingKey = signingKey
         self.sshKeyPath = sshKeyPath
         self.isActive = isActive
+    }
+
+    var resolvedGitProvider: GitProvider {
+        gitProvider ?? .other
     }
 }
 
