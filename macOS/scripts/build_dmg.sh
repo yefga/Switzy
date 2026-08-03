@@ -17,7 +17,7 @@ BUILD_DIR="${DERIVED_DATA_PATH}/Build/Products/Release"
 VERSION=$(grep "MARKETING_VERSION =" Configs/Project.xcconfig | cut -d "=" -f 2 | xargs)
 DMG_NAME="${PROJECT_NAME}-v${VERSION}.dmg"
 APP_NAME="${PROJECT_NAME}.app"
-SIGNING_IDENTITY="Developer ID Application: Yefga Torra (YG25GXN392)"
+SIGNING_IDENTITY=""
 NOTARY_PROFILE="homebrew"
 
 # 1. Build the app using Tuist
