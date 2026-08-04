@@ -9,6 +9,12 @@ import SwiftUI
 
 enum Constants {
 
+    // MARK: - Asset Images
+
+    enum AssetImage {
+        static let aboutIcon = "ic_about"
+    }
+
     // MARK: - System Images
 
     enum SystemImage {
@@ -178,8 +184,6 @@ enum Constants {
         static let aboutDescription = "Seamlessly switch Git identities from your\nmacOS Menu Bar."
         static let collaborationMessage = "Open for collaboration and contribution."
         static let githubRepository = "GitHub Repository"
-        static let defaultVersion = "0.1.0"
-        static let defaultBuild = "1"
         static let defaultCopyright = "Created by Yefga © 2026"
 
         static let github = "GitHub"

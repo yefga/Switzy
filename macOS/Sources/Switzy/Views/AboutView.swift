@@ -13,13 +13,12 @@ struct AboutView: View {
     var body: some View {
         VStack(spacing: 0) {
             // App Icon
-            Image(systemName: Constants.SystemImage.key)
+            Image(Constants.AssetImage.aboutIcon)
                 .resizable()
                 .aspectRatio(contentMode: .fit)
                 .frame(width: Constants.FontSize.aboutIcon, height: Constants.FontSize.aboutIcon)
-                .foregroundStyle(.white)
                 .padding(.top, Constants.Spacing.xxxxl * 2)
-            
+                .tint(.white)
             // App Name
             Text(Constants.Strings.appName)
                 .font(.system(size: Constants.FontSize.aboutTitle, weight: .bold))
@@ -34,10 +33,25 @@ struct AboutView: View {
                 .fixedSize(horizontal: false, vertical: true)
             
             // Version Info
-            let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String
-                ?? Constants.Strings.defaultVersion
-            let build = Bundle.main.infoDictionary?["CFBundleVersion"] as? String
-                ?? Constants.Strings.defaultBuild
+            let version: String = {
+                if let val = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String, !val.isEmpty {
+                    return val
+                }
+                if let val = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String, !val.isEmpty {
+                    return val
+                }
+                return ""
+            }()
+            
+            let build: String = {
+                if let val = Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String, !val.isEmpty {
+                    return val
+                }
+                if let val = Bundle.main.infoDictionary?["CFBundleVersion"] as? String, !val.isEmpty {
+                    return val
+                }
+                return ""
+            }()
 
             Text(Constants.Strings.versionDescription(version: version, build: build))
                 .font(.system(size: Constants.FontSize.callout))
@@ -59,16 +73,12 @@ struct AboutView: View {
             
             // Description
             VStack(spacing: 12) {
-                Text(Constants.Strings.aboutDescription)
+                Text(Constants.Strings.aboutDescription + " " +  Constants.Strings.collaborationMessage)
                     .multilineTextAlignment(.center)
                     .font(.system(size: 13))
                     .foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
                 
-                Text(Constants.Strings.collaborationMessage)
-                    .font(.system(size: 13, weight: .semibold))
-                    .foregroundStyle(.secondary)
-                    .fixedSize(horizontal: false, vertical: true)
                 
                 Link(
                     Constants.Strings.githubRepository,
