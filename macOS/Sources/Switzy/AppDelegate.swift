@@ -38,7 +38,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         updaterController = SPUStandardUpdaterController(
             startingUpdater: true,
             updaterDelegate: updaterService,
-            userDriverDelegate: nil
+            userDriverDelegate: updaterService
         )
         
         if let updater = updaterController?.updater {
