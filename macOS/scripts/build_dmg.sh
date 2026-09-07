@@ -40,10 +40,18 @@ echo "🔏 Codesigning .app..."
 codesign --force --options runtime --deep --sign "${SIGNING_IDENTITY}" "${BUILD_DIR}/${APP_NAME}"
 
 # 4. Create DMG
+# Stage the app next to an /Applications symlink so the disk image offers a
+# drop target. Without it the app is the only item in the window and gets
+# dragged wherever the user happens to be, ending up outside /Applications.
 echo "📦 Creating DMG: ${DMG_NAME}..."
 TEMP_DMG="${RELEASE_DIR}/temp.dmg"
+STAGING_DIR="$(mktemp -d)"
+trap 'rm -rf "${STAGING_DIR}"' EXIT
 
-hdiutil create -volname "${PROJECT_NAME}" -srcfolder "${BUILD_DIR}/${APP_NAME}" -ov -format UDZO "${TEMP_DMG}"
+ditto "${BUILD_DIR}/${APP_NAME}" "${STAGING_DIR}/${APP_NAME}"
+ln -s /Applications "${STAGING_DIR}/Applications"
+
+hdiutil create -volname "${PROJECT_NAME}" -srcfolder "${STAGING_DIR}" -ov -format UDZO "${TEMP_DMG}"
 mv "${TEMP_DMG}" "${RELEASE_DIR}/${DMG_NAME}"
 
 # 5. Codesign the DMG
