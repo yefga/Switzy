@@ -17,8 +17,15 @@ BUILD_DIR="${DERIVED_DATA_PATH}/Build/Products/Release"
 VERSION=$(grep "MARKETING_VERSION =" Configs/Project.xcconfig | cut -d "=" -f 2 | xargs)
 DMG_NAME="${PROJECT_NAME}-v${VERSION}.dmg"
 APP_NAME="${PROJECT_NAME}.app"
-SIGNING_IDENTITY=""
-NOTARY_PROFILE="homebrew"
+SIGNING_IDENTITY="${SIGNING_IDENTITY:-}"
+NOTARY_PROFILE="${NOTARY_PROFILE:-homebrew}"
+
+if [ -z "${SIGNING_IDENTITY}" ]; then
+  echo "❌ SIGNING_IDENTITY is not set. Export it before running, e.g.:" >&2
+  echo "   SIGNING_IDENTITY=\"Developer ID Application: Your Name (TEAMID)\" $0" >&2
+  echo "   (list identities with: security find-identity -v -p codesigning)" >&2
+  exit 1
+fi
 
 # 1. Build the app using Tuist
 echo "🚀 Building Switzy v${VERSION}..."
