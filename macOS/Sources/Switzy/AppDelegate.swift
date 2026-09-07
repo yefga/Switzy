@@ -79,17 +79,41 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             appModel.$availableProfiles,
             appModel.$availableSSHKeyCount
         )
-        .sink { [weak self] _, _, _, _ in
-            self?.updateStatusItemTitle()
+        .receive(on: RunLoop.main)
+        .sink { [weak self] mode, activeProfileID, profiles, sshKeyCount in
+            self?.updateStatusItemTitle(
+                mode: mode,
+                activeProfileID: activeProfileID,
+                profiles: profiles,
+                sshKeyCount: sshKeyCount
+            )
         }
         .store(in: &cancellables)
     }
 
-    private func updateStatusItemTitle() {
+    private func updateStatusItemTitle(
+        mode: Constants.StatusBarDisplayMode? = nil,
+        activeProfileID: UUID? = nil,
+        profiles: [GitProfile]? = nil,
+        sshKeyCount: Int? = nil
+    ) {
+        guard let button = statusItem?.button else { return }
+
+        let title = appModel.statusBarTitle(
+            for: mode ?? appModel.statusBarDisplayMode,
+            activeProfileID: activeProfileID ?? appModel.activeProfileID,
+            availableProfiles: profiles ?? appModel.availableProfiles,
+            availableSSHKeyCount: sshKeyCount ?? appModel.availableSSHKeyCount
+        )
+
         let spacing = "\u{00A0}"
-        statusItem?.button?.title = appModel.statusBarTitle.map {
-            spacing + $0
-        } ?? ""
+        if let title, !title.isEmpty {
+            button.imagePosition = .imageLeading
+            button.title = spacing + title
+        } else {
+            button.imagePosition = .imageOnly
+            button.title = ""
+        }
     }
 
     // MARK: - Popover
