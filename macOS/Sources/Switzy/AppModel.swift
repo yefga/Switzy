@@ -44,7 +44,6 @@ final class AppModel: ObservableObject {
         )
         statusBarDisplayMode = Constants.StatusBarDisplayMode(rawValue: savedMode ?? "")
             ?? .iconOnly
-        loadSavedProfiles()
     }
 
     deinit {
@@ -114,13 +113,9 @@ final class AppModel: ObservableObject {
     }
 
     func detectActiveProfile() async {
-        if let detectedID = await gitConfig.detectActiveProfile(
+        activeProfileID = await gitConfig.detectActiveProfile(
             from: availableProfiles
-        ) {
-            activeProfileID = detectedID
-        } else if activeProfileID == nil {
-            activeProfileID = availableProfiles.first(where: { $0.isActive })?.id
-        }
+        )
         syncActiveFlags()
     }
 
@@ -147,37 +142,17 @@ final class AppModel: ObservableObject {
         availableProfiles.first { $0.id == activeProfileID }
     }
 
-    func statusBarTitle(
-        for mode: Constants.StatusBarDisplayMode,
-        activeProfileID: UUID?,
-        availableProfiles: [GitProfile],
-        availableSSHKeyCount: Int
-    ) -> String? {
-        switch mode {
+    var statusBarTitle: String? {
+        switch statusBarDisplayMode {
         case .iconOnly:
             return nil
         case .activeProfile:
-            guard let activeProfile = availableProfiles.first(where: { $0.id == activeProfileID }) else {
-                return Constants.Strings.noActiveProfile
-            }
-            return Constants.Strings.profilePlatform(
-                name: activeProfile.name,
-                platform: activeProfile.resolvedGitProvider.statusBarName
-            )
+            return activeProfileStatusTitle
         case .profileCount:
             return Constants.Strings.profileCount(availableProfiles.count)
         case .sshKeyCount:
             return Constants.Strings.sshKeyCount(availableSSHKeyCount)
         }
-    }
-
-    var statusBarTitle: String? {
-        statusBarTitle(
-            for: statusBarDisplayMode,
-            activeProfileID: activeProfileID,
-            availableProfiles: availableProfiles,
-            availableSSHKeyCount: availableSSHKeyCount
-        )
     }
 
     func statusBarOptionLabel(for mode: Constants.StatusBarDisplayMode) -> String {
@@ -265,7 +240,7 @@ final class AppModel: ObservableObject {
 
     private func saveProfiles() {
         if let data = try? JSONEncoder().encode(availableProfiles) {
-            userDefaults.set(
+            UserDefaults.standard.set(
                 data,
                 forKey: Constants.Persistence.profilesKey
             )
@@ -274,7 +249,7 @@ final class AppModel: ObservableObject {
 
     private func loadSavedProfiles() {
         guard
-            let data = userDefaults.data(
+            let data = UserDefaults.standard.data(
                 forKey: Constants.Persistence.profilesKey
             ),
             let profiles = try? JSONDecoder().decode(
@@ -285,8 +260,5 @@ final class AppModel: ObservableObject {
             return
         }
         availableProfiles = profiles
-        if activeProfileID == nil {
-            activeProfileID = profiles.first(where: { $0.isActive })?.id
-        }
     }
 }
