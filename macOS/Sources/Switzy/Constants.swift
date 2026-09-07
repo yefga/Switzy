@@ -276,6 +276,7 @@ enum Constants {
     enum Persistence {
         static let profilesKey = "com.yefga.switzy.profiles"
         static let statusBarDisplayModeKey = "com.yefga.switzy.statusBarDisplayMode"
+        static let activeProfileIDKey = "com.yefga.switzy.activeProfileID"
     }
 
     enum StatusBarDisplayMode: String, CaseIterable, Identifiable {

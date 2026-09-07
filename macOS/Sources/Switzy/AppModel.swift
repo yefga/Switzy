@@ -14,7 +14,14 @@ final class AppModel: ObservableObject {
     // MARK: - Published State
 
     @Published var availableProfiles: [GitProfile] = []
-    @Published var activeProfileID: UUID?
+    @Published var activeProfileID: UUID? {
+        didSet {
+            userDefaults.set(
+                activeProfileID?.uuidString,
+                forKey: Constants.Persistence.activeProfileIDKey
+            )
+        }
+    }
     @Published var availableSSHKeyCount: Int = 0
     @Published var statusBarDisplayMode: Constants.StatusBarDisplayMode {
         didSet {
@@ -113,9 +120,21 @@ final class AppModel: ObservableObject {
     }
 
     func detectActiveProfile() async {
-        activeProfileID = await gitConfig.detectActiveProfile(
+        let detection = await gitConfig.detectActiveProfile(
             from: availableProfiles
         )
+
+        switch detection {
+        case .matched(let id):
+            activeProfileID = id
+        case .noMatch:
+            activeProfileID = nil
+        case .unavailable:
+            // Keep whatever was restored from disk rather than dropping the
+            // active profile just because git could not be read.
+            break
+        }
+
         syncActiveFlags()
     }
 
@@ -240,7 +259,7 @@ final class AppModel: ObservableObject {
 
     private func saveProfiles() {
         if let data = try? JSONEncoder().encode(availableProfiles) {
-            UserDefaults.standard.set(
+            userDefaults.set(
                 data,
                 forKey: Constants.Persistence.profilesKey
             )
@@ -249,7 +268,7 @@ final class AppModel: ObservableObject {
 
     private func loadSavedProfiles() {
         guard
-            let data = UserDefaults.standard.data(
+            let data = userDefaults.data(
                 forKey: Constants.Persistence.profilesKey
             ),
             let profiles = try? JSONDecoder().decode(
@@ -260,5 +279,20 @@ final class AppModel: ObservableObject {
             return
         }
         availableProfiles = profiles
+        restoreActiveProfileID()
+    }
+
+    private func restoreActiveProfileID() {
+        let storedID = userDefaults.string(
+            forKey: Constants.Persistence.activeProfileIDKey
+        )
+        .flatMap(UUID.init(uuidString:))
+
+        if let storedID, availableProfiles.contains(where: { $0.id == storedID }) {
+            activeProfileID = storedID
+            return
+        }
+
+        activeProfileID = availableProfiles.first { $0.isActive }?.id
     }
 }

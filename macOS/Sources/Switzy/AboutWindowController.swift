@@ -19,6 +19,7 @@ final class AboutWindowController {
     
     func showAbout(appModel: AppModel) {
         if let existingWindow = window {
+            DockVisibilityController.shared.track(existingWindow)
             existingWindow.makeKeyAndOrderFront(nil)
             NSApp.activate(ignoringOtherApps: true)
             return
@@ -48,6 +49,7 @@ final class AboutWindowController {
         newWindow.standardWindowButton(.zoomButton)?.isHidden = true
         
         self.window = newWindow
+        DockVisibilityController.shared.track(newWindow)
         DispatchQueue.main.async {
             newWindow.center()
             newWindow.makeKeyAndOrderFront(nil)

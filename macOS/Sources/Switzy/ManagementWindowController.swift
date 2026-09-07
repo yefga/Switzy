@@ -34,6 +34,7 @@ final class ManagementWindowController {
 
     func showWindow(appModel: AppModel) {
         if let existingWindow = window {
+            DockVisibilityController.shared.track(existingWindow)
             DispatchQueue.main.async { [weak self] in
                 self?.centerWindowOnScreen(existingWindow)
                 existingWindow.makeKeyAndOrderFront(nil)
@@ -72,6 +73,7 @@ final class ManagementWindowController {
         newWindow.backgroundColor = .windowBackgroundColor
 
         self.window = newWindow
+        DockVisibilityController.shared.track(newWindow)
         DispatchQueue.main.async { [weak self] in
             if let self = self {
                 self.centerWindowOnScreen(newWindow)

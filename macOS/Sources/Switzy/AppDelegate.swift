@@ -73,23 +73,36 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             button.imagePosition = .imageLeading
         }
 
+        // `@Published` emits in `willSet`, so the model still holds the previous
+        // value while the subscriber runs. Hopping to the next main-queue turn
+        // guarantees the title is built from the committed state.
         Publishers.CombineLatest4(
             appModel.$statusBarDisplayMode,
             appModel.$activeProfileID,
             appModel.$availableProfiles,
             appModel.$availableSSHKeyCount
         )
+        .receive(on: DispatchQueue.main)
         .sink { [weak self] _, _, _, _ in
             self?.updateStatusItemTitle()
         }
         .store(in: &cancellables)
+
+        updateStatusItemTitle()
     }
 
     private func updateStatusItemTitle() {
+        guard let button = statusItem?.button else { return }
+
         let spacing = "\u{00A0}"
-        statusItem?.button?.title = appModel.statusBarTitle.map {
-            spacing + $0
-        } ?? ""
+        guard let title = appModel.statusBarTitle, !title.isEmpty else {
+            button.imagePosition = .imageOnly
+            button.title = ""
+            return
+        }
+
+        button.imagePosition = .imageLeading
+        button.title = spacing + title
     }
 
     // MARK: - Popover

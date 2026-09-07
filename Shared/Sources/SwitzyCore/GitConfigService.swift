@@ -30,6 +30,16 @@ enum GitConfigError: LocalizedError {
     }
 }
 
+/// Outcome of matching the current git config against the saved profiles.
+enum ActiveProfileDetection {
+    /// The global git config matches a saved profile.
+    case matched(UUID)
+    /// The global git config was readable but matches no saved profile.
+    case noMatch
+    /// The global git config could not be read (git missing, empty, or blocked).
+    case unavailable
+}
+
 actor GitConfigService {
 
     private let shell = ShellService()
@@ -84,15 +94,23 @@ actor GitConfigService {
     // MARK: - Detect Active Profile
 
     /// Determine which saved profile matches the current git config.
-    func detectActiveProfile(from profiles: [GitProfile]) async -> UUID? {
+    func detectActiveProfile(from profiles: [GitProfile]) async -> ActiveProfileDetection {
         let name = await currentUserName()
         let email = await currentUserEmail()
 
-        guard let name, let email else { return nil }
+        guard
+            let name, !name.isEmpty,
+            let email, !email.isEmpty
+        else {
+            return .unavailable
+        }
 
-        return profiles.first { profile in
+        let match = profiles.first { profile in
             profile.userName == name && profile.userEmail == email
-        }?.id
+        }
+
+        guard let match else { return .noMatch }
+        return .matched(match.id)
     }
 
     private func expandTilde(in path: String) -> String {
