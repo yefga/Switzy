@@ -42,6 +42,9 @@ enum Constants {
         static let plus = "plus"
         static let minus = "minus"
         static let plusCircle = "plus.circle.fill"
+        static let minusCircle = "minus.circle.fill"
+        static let xmark = "xmark"
+        static let signature = "signature"
         static let sshManage = "key.horizontal.fill"
         static let profileManage = "person.text.rectangle.fill"
         static let quit = "rectangle.portrait.and.arrow.right"
@@ -175,6 +178,17 @@ enum Constants {
         static let file = "File"
         static let passphrase = "Passphrase"
         static let optional = "Optional"
+        static let switchFailed = "Could not switch profile"
+        static let dismiss = "Dismiss"
+        static let noSigningKey = "No commit signing"
+        static let addFolder = "Add Folder..."
+        static let noFolderRules = "Used only when you switch manually"
+        static let folderRulesHint = "Repositories in these folders use this profile automatically."
+
+        static func sshAddFailed(detail: String) -> String {
+            "Profile switched, but the SSH key could not be added: \(detail)"
+        }
+
         static let checkForUpdates = "Check for Updates..."
         static let updateAvailable = "New update available!"
         static let updateNow = "Update Now"
@@ -258,6 +272,8 @@ enum Constants {
         static let gitEmail = "Git Email"
         static let gitHost = "Git Host"
         static let sshKey = "SSH KEY"
+        static let signingKey = "SIGNING KEY"
+        static let folderRules = "APPLIES TO FOLDERS"
         static let profiles = "Profiles"
         static let profile = "Profile"
         static let ssh = "SSH"

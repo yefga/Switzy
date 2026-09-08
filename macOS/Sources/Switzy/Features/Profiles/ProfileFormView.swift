@@ -72,6 +72,8 @@ struct ProfileFormView: View {
         VStack(alignment: .leading, spacing: Constants.Spacing.xxxl) {
             identitySection
             sshKeySection
+            signingKeySection
+            folderRulesSection
             saveButton
         }
         .padding(Constants.Spacing.xxxl)
@@ -147,6 +149,117 @@ struct ProfileFormView: View {
                 Spacer()
             }
         }
+    }
+
+    @ViewBuilder
+    private var signingKeySection: some View {
+        VStack(alignment: .leading, spacing: Constants.Spacing.xxl) {
+            Text(Constants.Label.signingKey)
+                .font(.system(
+                    size: Constants.FontSize.caption,
+                    weight: .semibold
+                ))
+                .foregroundStyle(.secondary)
+
+            HStack {
+                if viewModel.availableKeys.isEmpty {
+                    Text(Constants.Strings.selectYourKey)
+                        .font(.system(size: Constants.FontSize.body))
+                        .foregroundStyle(.tertiary)
+                } else {
+                    Picker("", selection: $viewModel.selectedSigningKey) {
+                        Text(Constants.Strings.noSigningKey).tag("")
+                        ForEach(viewModel.availableKeys, id: \.self) { key in
+                            Text((key as NSString).lastPathComponent).tag(key)
+                        }
+                    }
+                    .labelsHidden()
+                }
+
+                Spacer()
+            }
+        }
+    }
+
+    @ViewBuilder
+    private var folderRulesSection: some View {
+        VStack(alignment: .leading, spacing: Constants.Spacing.xxl) {
+            VStack(alignment: .leading, spacing: Constants.Spacing.xs) {
+                Text(Constants.Label.folderRules)
+                    .font(.system(
+                        size: Constants.FontSize.caption,
+                        weight: .semibold
+                    ))
+                    .foregroundStyle(.secondary)
+
+                Text(Constants.Strings.folderRulesHint)
+                    .font(.system(size: Constants.FontSize.caption))
+                    .foregroundStyle(.tertiary)
+            }
+
+            if viewModel.directoryRules.isEmpty {
+                Text(Constants.Strings.noFolderRules)
+                    .font(.system(size: Constants.FontSize.body))
+                    .foregroundStyle(.tertiary)
+            } else {
+                ForEach(viewModel.directoryRules, id: \.self) { directory in
+                    folderRuleRow(directory)
+                }
+            }
+
+            Button {
+                chooseDirectory()
+            } label: {
+                HStack(spacing: Constants.Spacing.sm) {
+                    Image(systemName: Constants.SystemImage.plusCircle)
+                    Text(Constants.Strings.addFolder)
+                }
+                .font(.system(size: Constants.FontSize.body))
+            }
+            .buttonStyle(.plain)
+            .foregroundStyle(Color.accentColor)
+        }
+    }
+
+    @ViewBuilder
+    private func folderRuleRow(_ directory: String) -> some View {
+        HStack(spacing: Constants.Spacing.lg) {
+            Image(systemName: Constants.SystemImage.folder)
+                .font(.system(size: Constants.FontSize.caption))
+                .foregroundStyle(.tertiary)
+
+            Text(abbreviated(directory))
+                .font(.system(size: Constants.FontSize.body))
+                .lineLimit(1)
+                .truncationMode(.head)
+
+            Spacer()
+
+            Button {
+                viewModel.removeDirectoryRule(directory)
+            } label: {
+                Image(systemName: Constants.SystemImage.minusCircle)
+                    .font(.system(size: Constants.FontSize.body))
+                    .foregroundStyle(.tertiary)
+            }
+            .buttonStyle(.plain)
+        }
+    }
+
+    private func chooseDirectory() {
+        let panel = NSOpenPanel()
+        panel.canChooseDirectories = true
+        panel.canChooseFiles = false
+        panel.allowsMultipleSelection = false
+
+        guard panel.runModal() == .OK, let url = panel.url else { return }
+        viewModel.addDirectoryRule(url.path)
+    }
+
+    private func abbreviated(_ path: String) -> String {
+        let home = FileManager.default.homeDirectoryForCurrentUser.path
+        guard path.hasPrefix(home) else { return path }
+        return "~" + path.dropFirst(home.count)
     }
 
     @ViewBuilder

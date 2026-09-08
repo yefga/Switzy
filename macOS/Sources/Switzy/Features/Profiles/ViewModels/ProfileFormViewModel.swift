@@ -14,8 +14,10 @@ final class ProfileFormViewModel: ObservableObject {
     @Published var gitEmail: String = ""
     @Published var gitProvider: GitProvider = .other
     @Published var selectedSSHKey: String = ""
+    @Published var selectedSigningKey: String = ""
+    @Published var directoryRules: [String] = []
     @Published var availableKeys: [String] = []
-    
+
     @Published var isCreatingNewProfile: Bool = false
     @Published var showForm: Bool = false
     
@@ -32,6 +34,8 @@ final class ProfileFormViewModel: ObservableObject {
         gitEmail = profile.userEmail
         gitProvider = profile.resolvedGitProvider
         selectedSSHKey = profile.sshKeyPath ?? ""
+        selectedSigningKey = profile.signingKey ?? ""
+        directoryRules = profile.resolvedDirectoryRules
     }
 
     func resetForm() {
@@ -40,6 +44,17 @@ final class ProfileFormViewModel: ObservableObject {
         gitEmail = ""
         gitProvider = .other
         selectedSSHKey = ""
+        selectedSigningKey = ""
+        directoryRules = []
+    }
+
+    func addDirectoryRule(_ directory: String) {
+        guard !directoryRules.contains(directory) else { return }
+        directoryRules.append(directory)
+    }
+
+    func removeDirectoryRule(_ directory: String) {
+        directoryRules.removeAll { $0 == directory }
     }
 
     func saveProfile(appModel: AppModel, currentProfile: GitProfile?) {
@@ -49,7 +64,9 @@ final class ProfileFormViewModel: ObservableObject {
                 userName: gitUserName,
                 userEmail: gitEmail,
                 gitProvider: gitProvider,
-                sshKeyPath: selectedSSHKey.isEmpty ? nil : selectedSSHKey
+                signingKey: selectedSigningKey.isEmpty ? nil : selectedSigningKey,
+                sshKeyPath: selectedSSHKey.isEmpty ? nil : selectedSSHKey,
+                directoryRules: directoryRules.isEmpty ? nil : directoryRules
             )
             appModel.addOrUpdateProfile(newProfile)
             appModel.selectedProfileID = newProfile.id
@@ -64,7 +81,9 @@ final class ProfileFormViewModel: ObservableObject {
             updated.userName = gitUserName
             updated.userEmail = gitEmail
             updated.gitProvider = gitProvider
+            updated.signingKey = selectedSigningKey.isEmpty ? nil : selectedSigningKey
             updated.sshKeyPath = selectedSSHKey.isEmpty ? nil : selectedSSHKey
+            updated.directoryRules = directoryRules.isEmpty ? nil : directoryRules
             appModel.addOrUpdateProfile(updated)
             withAnimation {
                 showForm = false

@@ -26,6 +26,9 @@ struct GitProfile: Identifiable, Codable, Equatable, Hashable {
     var signingKey: String?
     var sshKeyPath: String?
     var isActive: Bool
+    /// Directories whose repositories use this profile via an `includeIf` rule.
+    /// Optional so profiles saved before directory rules existed still decode.
+    var directoryRules: [String]?
 
     init(
         id: UUID = UUID(),
@@ -35,7 +38,8 @@ struct GitProfile: Identifiable, Codable, Equatable, Hashable {
         gitProvider: GitProvider? = nil,
         signingKey: String? = nil,
         sshKeyPath: String? = nil,
-        isActive: Bool = false
+        isActive: Bool = false,
+        directoryRules: [String]? = nil
     ) {
         self.id = id
         self.name = name
@@ -45,10 +49,15 @@ struct GitProfile: Identifiable, Codable, Equatable, Hashable {
         self.signingKey = signingKey
         self.sshKeyPath = sshKeyPath
         self.isActive = isActive
+        self.directoryRules = directoryRules
     }
 
     var resolvedGitProvider: GitProvider {
         gitProvider ?? .other
+    }
+
+    var resolvedDirectoryRules: [String] {
+        directoryRules ?? []
     }
 }
 

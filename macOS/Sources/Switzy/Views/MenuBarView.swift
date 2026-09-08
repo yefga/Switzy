@@ -18,6 +18,28 @@ struct MenuBarView: View {
                 updateBanner
                 Divider().opacity(Constants.Opacity.divider)
             }
+            if let message = appModel.errorMessage {
+                statusBanner(
+                    message: message,
+                    title: Constants.Strings.switchFailed,
+                    tint: .red,
+                    icon: Constants.SystemImage.warning
+                ) {
+                    appModel.errorMessage = nil
+                }
+                Divider().opacity(Constants.Opacity.divider)
+            }
+            if let message = appModel.warningMessage {
+                statusBanner(
+                    message: message,
+                    title: nil,
+                    tint: .orange,
+                    icon: Constants.SystemImage.warning
+                ) {
+                    appModel.warningMessage = nil
+                }
+                Divider().opacity(Constants.Opacity.divider)
+            }
             headerView
             Divider().opacity(Constants.Opacity.divider)
             profileListView
@@ -63,6 +85,56 @@ struct MenuBarView: View {
         .padding(.vertical, Constants.Spacing.xxl)
     }
     
+    // MARK: - Status Banner
+
+    /// A failed switch used to leave no trace in the UI at all, so the popover
+    /// looked identical to a successful one.
+    @ViewBuilder
+    private func statusBanner(
+        message: String,
+        title: String?,
+        tint: Color,
+        icon: String,
+        dismiss: @escaping () -> Void
+    ) -> some View {
+        HStack(spacing: Constants.Spacing.xl) {
+            ZStack {
+                Circle()
+                    .fill(tint.opacity(0.1))
+                    .frame(width: 28, height: 28)
+
+                Image(systemName: icon)
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundStyle(tint)
+            }
+
+            VStack(alignment: .leading, spacing: 0) {
+                if let title {
+                    Text(title)
+                        .font(.system(size: Constants.FontSize.callout, weight: .semibold))
+                }
+                Text(message)
+                    .font(.system(size: Constants.FontSize.caption))
+                    .foregroundStyle(.secondary)
+                    .lineLimit(3)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+
+            Spacer()
+
+            Button(action: dismiss) {
+                Image(systemName: Constants.SystemImage.xmark)
+                    .font(.system(size: 10, weight: .bold))
+                    .foregroundStyle(.tertiary)
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel(Constants.Strings.dismiss)
+        }
+        .padding(.horizontal, Constants.Spacing.xxxl)
+        .padding(.vertical, Constants.Spacing.xl)
+        .background(tint.opacity(0.08))
+    }
+
     // MARK: - Update Banner
     
     @ViewBuilder

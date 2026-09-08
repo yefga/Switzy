@@ -76,9 +76,20 @@ actor GitConfigService {
 
         if let signingKey = profile.signingKey, !signingKey.isEmpty {
             _ = try await shell.run("git", arguments: ["config", "--global", "user.signingkey", signingKey])
+
+            // Setting user.signingkey alone signs nothing. A key given as a path
+            // is an SSH key, which git only accepts once gpg.format says so.
+            if isSSHSigningKey(signingKey) {
+                _ = try await shell.run("git", arguments: ["config", "--global", "gpg.format", "ssh"])
+            } else {
+                _ = try? await shell.run("git", arguments: ["config", "--global", "--unset", "gpg.format"])
+            }
+            _ = try await shell.run("git", arguments: ["config", "--global", "commit.gpgsign", "true"])
         } else {
             // Unset signing key if not provided
             _ = try? await shell.run("git", arguments: ["config", "--global", "--unset", "user.signingkey"])
+            _ = try? await shell.run("git", arguments: ["config", "--global", "--unset", "gpg.format"])
+            _ = try? await shell.run("git", arguments: ["config", "--global", "--unset", "commit.gpgsign"])
         }
 
         if let sshKeyPath = profile.sshKeyPath, !sshKeyPath.isEmpty {
@@ -105,12 +116,33 @@ actor GitConfigService {
             return .unavailable
         }
 
-        let match = profiles.first { profile in
+        let candidates = profiles.filter { profile in
             profile.userName == name && profile.userEmail == email
         }
 
-        guard let match else { return .noMatch }
-        return .matched(match.id)
+        guard let first = candidates.first else { return .noMatch }
+        guard candidates.count > 1 else { return .matched(first.id) }
+
+        // Profiles that share an identity (the same person on two hosts) are
+        // indistinguishable by name and email alone. Break the tie on the SSH
+        // key and signing key actually in the config.
+        let sshCommand = await currentSSHCommand()
+        let signingKey = await currentSigningKey()
+
+        let resolved = candidates.first { profile in
+            guard let keyPath = profile.sshKeyPath, !keyPath.isEmpty else { return false }
+            return sshCommand?.contains(expandTilde(in: keyPath)) == true
+        } ?? candidates.first { profile in
+            guard let key = profile.signingKey, !key.isEmpty else { return false }
+            return signingKey == key
+        }
+
+        return .matched((resolved ?? first).id)
+    }
+
+    /// An SSH signing key is given as a path; a GPG key is a key id.
+    private func isSSHSigningKey(_ key: String) -> Bool {
+        key.hasPrefix("/") || key.hasPrefix("~") || key.contains(".ssh/")
     }
 
     private func expandTilde(in path: String) -> String {
