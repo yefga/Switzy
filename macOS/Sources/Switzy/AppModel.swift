@@ -71,6 +71,7 @@ final class AppModel: ObservableObject {
             loadSavedProfiles()
             await importCurrentGitProfileIfNeeded()
             await detectActiveProfile()
+            await refreshWrittenConfig()
             await loadSSHKeyCount()
             isLoading = false
         }
@@ -122,6 +123,23 @@ final class AppModel: ObservableObject {
             } catch {
                 await MainActor.run { self.errorMessage = error.localizedDescription }
             }
+        }
+    }
+
+    /// Rewrite what earlier versions wrote — profile config files, folder rules
+    /// and the global ssh command — in the current format, so fixes to that
+    /// format reach existing setups without the user re-saving each profile.
+    private func refreshWrittenConfig() async {
+        for profile in availableProfiles where !profile.resolvedDirectoryRules.isEmpty {
+            do {
+                try await gitInclude.applyRules(for: profile)
+            } catch {
+                errorMessage = error.localizedDescription
+            }
+        }
+
+        if let activeProfile {
+            try? await gitConfig.refreshSSHCommand(for: activeProfile)
         }
     }
 

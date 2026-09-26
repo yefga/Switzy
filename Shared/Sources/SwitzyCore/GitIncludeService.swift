@@ -81,7 +81,8 @@ actor GitIncludeService {
 
         if let sshKeyPath = profile.sshKeyPath, !sshKeyPath.isEmpty {
             lines.append("[core]")
-            lines.append("\tsshCommand = ssh -i \(expandTilde(in: sshKeyPath))")
+            let sshCommand = SSHCommand.make(keyPath: expandTilde(in: sshKeyPath))
+            lines.append("\tsshCommand = \(configQuoted(sshCommand))")
         }
 
         return lines.joined(separator: "\n") + "\n"
@@ -105,6 +106,8 @@ actor GitIncludeService {
     }
 
     func addRule(directory: String, configPath: String) async throws {
+        await removeLegacyRule(directory: directory)
+
         do {
             _ = try await shell.run(
                 "git",
@@ -119,6 +122,16 @@ actor GitIncludeService {
         _ = try? await shell.run(
             "git",
             arguments: ["config", "--global", "--unset", includeKey(for: directory)]
+        )
+        await removeLegacyRule(directory: directory)
+    }
+
+    /// Earlier versions wrote case-sensitive `gitdir:`, which misses a
+    /// repository reached as `~/work` when the rule says `~/Work`.
+    private func removeLegacyRule(directory: String) async {
+        _ = try? await shell.run(
+            "git",
+            arguments: ["config", "--global", "--unset", legacyIncludeKey(for: directory)]
         )
     }
 
@@ -146,9 +159,14 @@ actor GitIncludeService {
 
     // MARK: - Private Helpers
 
-    /// `includeIf.gitdir:<dir>/.path` — the key git itself uses, so rules are
+    /// `includeIf.gitdir/i:<dir>/.path` — the key git itself uses, so rules are
     /// written and removed with `git config` rather than by editing ~/.gitconfig.
+    /// `/i` matches case-insensitively, like the default macOS file system.
     private func includeKey(for directory: String) -> String {
+        "includeIf.gitdir/i:\(normalized(directory)).path"
+    }
+
+    private func legacyIncludeKey(for directory: String) -> String {
         "includeIf.gitdir:\(normalized(directory)).path"
     }
 
@@ -156,9 +174,9 @@ actor GitIncludeService {
         let trimmed = key.trimmingCharacters(in: .whitespaces)
         // git normalises the section name to lowercase on read ("includeif"),
         // while the subsection keeps the case it was written with.
-        let prefix = "includeif.gitdir:"
+        let lowercased = trimmed.lowercased()
         guard
-            trimmed.lowercased().hasPrefix(prefix),
+            let prefix = ["includeif.gitdir/i:", "includeif.gitdir:"].first(where: lowercased.hasPrefix),
             trimmed.hasSuffix(".path")
         else {
             return nil
@@ -168,6 +186,15 @@ actor GitIncludeService {
         let end = trimmed.index(trimmed.endIndex, offsetBy: -".path".count)
         guard start < end else { return nil }
         return String(trimmed[start..<end])
+    }
+
+    /// A config file value in double quotes keeps `#` and `;` from starting a
+    /// comment; only backslash and double quote need escaping inside them.
+    private func configQuoted(_ value: String) -> String {
+        let escaped = value
+            .replacingOccurrences(of: "\\", with: "\\\\")
+            .replacingOccurrences(of: "\"", with: "\\\"")
+        return "\"\(escaped)\""
     }
 
     /// A `gitdir:` pattern ending in `/` matches every repository beneath it.

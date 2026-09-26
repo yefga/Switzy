@@ -92,14 +92,18 @@ actor GitConfigService {
             _ = try? await shell.run("git", arguments: ["config", "--global", "--unset", "commit.gpgsign"])
         }
 
+        try await refreshSSHCommand(for: profile)
+        return true
+    }
+
+    /// Write the profile's key as the global core.sshCommand, or unset it.
+    func refreshSSHCommand(for profile: GitProfile) async throws {
         if let sshKeyPath = profile.sshKeyPath, !sshKeyPath.isEmpty {
-            let expandedPath = expandTilde(in: sshKeyPath)
-            let sshCommand = "ssh -i \(expandedPath)"
+            let sshCommand = SSHCommand.make(keyPath: expandTilde(in: sshKeyPath))
             _ = try await shell.run("git", arguments: ["config", "--global", "core.sshCommand", sshCommand])
         } else {
             _ = try? await shell.run("git", arguments: ["config", "--global", "--unset", "core.sshCommand"])
         }
-        return true
     }
 
     // MARK: - Detect Active Profile
