@@ -6,6 +6,20 @@
         <description>Most recent changes with links to updates.</description>
         <language>en</language>
         <item>
+            <title>Version 1.4.0</title>
+            <sparkle:releaseNotesLink>
+                https://github.com/yefga/Switzy/releases/tag/v1.4.0
+            </sparkle:releaseNotesLink>
+            <pubDate>Sun, 27 Sep 2026 00:26:38 +0700</pubDate>
+            <enclosure
+                url="https://github.com/yefga/Switzy/releases/download/v1.4.0/Switzy-v1.4.0.dmg"
+                sparkle:version="6"
+                sparkle:shortVersionString="1.4.0"
+                sparkle:edSignature="fvnMsRqEz1pwrOrIYULXN4hYLN3kEuTwBmfBEOozRrr3qElb1IP2QcLaHLAgyA+SHaQeeNzIlirNSvDGaE+wAA=="
+                length="2391955"
+                type="application/octet-stream" />
+        </item>
+        <item>
             <title>Version 1.3.0</title>
             <sparkle:releaseNotesLink>
                 https://github.com/yefga/Switzy/releases/tag/v1.3.0
