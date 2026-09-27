@@ -33,16 +33,20 @@ final class AppModel: ObservableObject {
     }
     @Published var isLoading: Bool = false
     @Published var errorMessage: String?
+    /// A step that failed without failing the switch as a whole.
+    @Published var warningMessage: String?
 
     // MARK: - Services
 
     private let gitConfig = GitConfigService()
+    private let gitInclude = GitIncludeService()
     private let sshService = SSHKeyService()
     private let userDefaults: UserDefaults
 
     // MARK: - Task Management
 
     private var loadTask: Task<Void, Never>?
+    private var ruleTask: Task<Void, Never>?
 
     init(userDefaults: UserDefaults = .standard) {
         self.userDefaults = userDefaults
@@ -55,6 +59,7 @@ final class AppModel: ObservableObject {
 
     deinit {
         loadTask?.cancel()
+        ruleTask?.cancel()
     }
 
     // MARK: - Initialization
@@ -66,6 +71,7 @@ final class AppModel: ObservableObject {
             loadSavedProfiles()
             await importCurrentGitProfileIfNeeded()
             await detectActiveProfile()
+            await refreshWrittenConfig()
             await loadSSHKeyCount()
             isLoading = false
         }
@@ -74,41 +80,101 @@ final class AppModel: ObservableObject {
     // MARK: - Profile Management
 
     func addOrUpdateProfile(_ profile: GitProfile) {
+        let previousRules = availableProfiles
+            .first { $0.id == profile.id }?
+            .resolvedDirectoryRules ?? []
+
         if let index = availableProfiles.firstIndex(where: { $0.id == profile.id }) {
             availableProfiles[index] = profile
         } else {
             availableProfiles.append(profile)
         }
         saveProfiles()
+        syncDirectoryRules(for: profile, removing: previousRules)
     }
 
     func deleteProfile(id: UUID) {
+        let removed = availableProfiles.first { $0.id == id }
+
         availableProfiles.removeAll { $0.id == id }
         if activeProfileID == id {
             activeProfileID = nil
         }
         saveProfiles()
+
+        guard let removed else { return }
+        ruleTask = Task { [gitInclude] in
+            await gitInclude.removeAllRules(for: removed)
+        }
+    }
+
+    /// Reconcile a profile's `includeIf` rules with what it claimed before, so
+    /// directories the user removed stop resolving to this identity.
+    private func syncDirectoryRules(for profile: GitProfile, removing previousRules: [String]) {
+        let staleRules = previousRules.filter { !profile.resolvedDirectoryRules.contains($0) }
+
+        ruleTask = Task { [gitInclude] in
+            for directory in staleRules {
+                await gitInclude.removeRule(directory: directory)
+            }
+
+            do {
+                try await gitInclude.applyRules(for: profile)
+            } catch {
+                await MainActor.run { self.errorMessage = error.localizedDescription }
+            }
+        }
+    }
+
+    /// Rewrite what earlier versions wrote — profile config files, folder rules
+    /// and the global ssh command — in the current format, so fixes to that
+    /// format reach existing setups without the user re-saving each profile.
+    private func refreshWrittenConfig() async {
+        for profile in availableProfiles where !profile.resolvedDirectoryRules.isEmpty {
+            do {
+                try await gitInclude.applyRules(for: profile)
+            } catch {
+                errorMessage = error.localizedDescription
+            }
+        }
+
+        if let activeProfile {
+            try? await gitConfig.refreshSSHCommand(for: activeProfile)
+        }
     }
 
     func switchProfile(to profile: GitProfile) async {
         isLoading = true
         errorMessage = nil
+        warningMessage = nil
+
+        let outgoingKeyPath = activeProfile?.sshKeyPath
 
         do {
             try await gitConfig.applyProfile(profile)
-            
+
+            // Drop the outgoing key before adding the new one, otherwise
+            // identities pile up in the agent and ssh may offer the wrong
+            // one first. Removal fails harmlessly if it was never loaded.
+            if let outgoingKeyPath,
+               !outgoingKeyPath.isEmpty,
+               outgoingKeyPath != profile.sshKeyPath {
+                try? await sshService.removeFromAgent(privateKeyPath: outgoingKeyPath)
+            }
+
             // Activate SSH key in agent if provided
             if let sshKeyPath = profile.sshKeyPath, !sshKeyPath.isEmpty {
                 do {
-                    // Try to clear default keys first? Or just add?
-                    // User said "ssh-add selected_ssh_on profile"
                     try await sshService.addToAgent(privateKeyPath: sshKeyPath)
                 } catch {
-                    // Log but don't fail profile switch
-                    print("SSH-ADD failed: \(error.localizedDescription)")
+                    // The identity switch itself succeeded, so this is a
+                    // warning rather than a failure.
+                    warningMessage = Constants.Strings.sshAddFailed(
+                        detail: error.localizedDescription
+                    )
                 }
             }
-            
+
             activeProfileID = profile.id
             syncActiveFlags()
             saveProfiles()

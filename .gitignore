@@ -37,3 +37,6 @@ Examples
 
 # AI agents
 .qwen
+
+# Release DMGs are uploaded to GitHub Releases, not committed
+release/*.dmg
